@@ -16,7 +16,7 @@ import { Genre } from '../types';
 const is_dev = import.meta.env.MODE === 'development';
 // API configuration
 const API_BASE_URL = is_dev
-  ? 'http://localhost:3001/api/v1'
+  ? 'http://localhost:3000/api/v1'
   : import.meta.env.VITE_API_BASE_URL;
 
 // Generic HTTP request function
