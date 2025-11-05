@@ -58,7 +58,7 @@ export const Header = ({
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <BranchSelector
-            width={{ xs: 150, sm: 175, md: 'calc(5rem + 100px)' }}
+            width={{ xs: 'max(100px, 55vw)', sm: 'calc(8rem + 200px)' }}
             size="small"
           />
           <LightDarkToggle />

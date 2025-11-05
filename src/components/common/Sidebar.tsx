@@ -42,15 +42,15 @@ export const Sidebar = ({
     );
   };
 
-  const menuItems = [
+  const menu_items = [
     { text: 'Home', path: '/', icon: <Home /> },
     { text: 'Dashboard', path: '/dashboard', icon: <Dashboard /> },
-    { text: 'Catalog', path: '/catalog', icon: <Book /> },
+    { text: 'Items', path: '/library-items', icon: <Book /> },
     { text: 'Patrons', path: '/patrons', icon: <Groups2 /> },
     { text: 'Transactions', path: '/transactions', icon: <SsidChart /> },
   ];
 
-  const adminItems = [
+  const admin_items = [
     { text: 'Admin Panel', path: '/admin', icon: <Settings /> },
   ];
 
@@ -92,7 +92,7 @@ export const Sidebar = ({
     <Get_Drawer_Component>
       <Box sx={{ overflow: 'auto', pt: 2 }}>
         <List>
-          {menuItems.map((item) => (
+          {menu_items.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
                 component={Link}
@@ -130,7 +130,7 @@ export const Sidebar = ({
           ))}
 
           <Divider sx={{ my: 1, mx: 2 }} />
-          {adminItems.map((item) => (
+          {admin_items.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
                 component={Link}

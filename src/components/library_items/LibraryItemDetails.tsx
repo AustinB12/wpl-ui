@@ -1,16 +1,16 @@
 import { Stack, Typography, Box, Paper } from '@mui/material';
-import type { Branch, Catalog_Item } from '../../types';
+import type { Branch, Library_Item } from '../../types';
 import { Library_Item_Type } from '../../types';
 import { DetailsDrawer } from '../common/DetailsDrawer';
 import { useCopies } from '../../hooks/useCopies';
 import { useBranches } from '../../hooks/useBranches';
-import { CopiesTable } from './CopiesTable';
+import { CopiesTable } from './LibraryItemCopiesTable';
 import HeadsetIcon from '@mui/icons-material/Headset';
 import { MenuBook, Newspaper, PersonalVideo } from '@mui/icons-material';
 
 interface ItemDetailsProps {
   is_open: boolean;
-  item: Catalog_Item | null;
+  item: Library_Item | null;
   onClose: () => void;
 }
 
@@ -26,7 +26,7 @@ interface LayoutConfig {
   icon?: React.ReactNode;
 }
 
-const getLayoutConfig = (item: Catalog_Item): LayoutConfig => {
+const getLayoutConfig = (item: Library_Item): LayoutConfig => {
   switch (item.item_type) {
     case Library_Item_Type.Book:
       return {
@@ -115,7 +115,7 @@ const ItemLayout = ({
   item,
   branches,
 }: {
-  item: Catalog_Item;
+  item: Library_Item;
   branches: Branch[];
 }) => {
   const config = getLayoutConfig(item);
@@ -178,7 +178,7 @@ const CopiesSection = ({
   item,
   branches,
 }: {
-  item: Catalog_Item;
+  item: Library_Item;
   branches: Branch[];
 }) => {
   const { data: copies, isLoading: loading, error } = useCopies(item.id);
@@ -206,7 +206,7 @@ const CopiesSection = ({
   );
 };
 
-export const CatalogItemDetails = ({
+export const LibraryItemDetails = ({
   is_open,
   item,
   onClose,

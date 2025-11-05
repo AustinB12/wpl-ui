@@ -22,10 +22,16 @@ import { CopiesDataGrid } from '../components/copies/CopiesDataGrid';
 import { format_date, is_overdue } from '../utils/dateUtils';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import { useCheckoutBook } from '../hooks/useTransactions';
+import { ConfirmCheckoutDetails } from '../components/common/ConfirmCheckoutDetails';
 
 const two_weeks_from_now = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // Default 2 weeks from now
 
-const steps = ['Select Patron', 'Select Item', 'Confirm Details'];
+const steps = [
+  'Select Patron',
+  'Select Item',
+  'Select Due Date',
+  'Confirm Details',
+];
 
 const columns: GridColDef[] = [
   { field: 'id', headerName: 'ID', width: 50 },
@@ -155,7 +161,7 @@ export const CheckOutItem: React.FC = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container
-        maxWidth="lg"
+        maxWidth="xl"
         sx={{
           py: 2,
           height: 1,
@@ -285,6 +291,15 @@ export const CheckOutItem: React.FC = () => {
                   />
                 </Paper>
               )}
+              {active_step === 3 && (
+                <ConfirmCheckoutDetails
+                  patron_id={form_data.patron_id}
+                  copy_id={form_data.item_id}
+                  due_date={form_data.due_date}
+                  on_confirm={() => {}}
+                  on_cancel={() => {}}
+                />
+              )}
               <Box />
             </Box>
             <Box
@@ -312,14 +327,18 @@ export const CheckOutItem: React.FC = () => {
                       onClick={handle_next}
                       disabled={is_next_disabled()}
                     >
-                      {active_step === steps.length - 1 ? 'Finish' : 'Next'}
+                      {active_step === steps.length - 1 ? 'Complete' : 'Next'}
                     </Button>
                   </span>
                 }
                 title={
                   is_next_disabled()
-                    ? `Select ${active_step === 0 ? 'patron' : 'item'} to proceed`
-                    : 'Next page'
+                    ? `Select ${
+                        active_step === 0 ? 'patron' : 'item'
+                      } to proceed`
+                    : active_step === steps.length - 1
+                    ? 'Complete the transaction'
+                    : 'Next Page'
                 }
               ></Tooltip>
             </Box>

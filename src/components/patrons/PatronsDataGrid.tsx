@@ -12,7 +12,11 @@ import { format_date, is_overdue } from '../../utils/dateUtils';
 import { Alert, Box, Link, Snackbar } from '@mui/material';
 
 const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 50 },
+  {
+    field: 'id',
+    headerName: 'ID',
+    width: 50,
+  },
   {
     field: 'first_name',
     headerName: 'Name',

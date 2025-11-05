@@ -16,24 +16,24 @@ import {
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import {
-  type Create_Catalog_Item_Form_Data,
+  type Create_Library_Item_Form_Data,
   Library_Item_Type,
 } from '../../types';
 import { validate_required, validate_year } from '../../utils/validators';
-import { dataService } from '../../services/dataService';
+import { data_service } from '../../services/dataService';
 
-interface CreateCatalogItemDialogProps {
+interface CreateLibraryItemDialogProps {
   open: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
+  on_close: () => void;
+  on_success?: () => void;
 }
 
-export const CreateCatalogItemDialog = ({
+export const CreateLibraryItemDialog = ({
   open,
-  onClose,
-  onSuccess,
-}: CreateCatalogItemDialogProps) => {
-  const [formData, setFormData] = useState<Create_Catalog_Item_Form_Data>({
+  on_close,
+  on_success,
+}: CreateLibraryItemDialogProps) => {
+  const [form_data, set_form_data] = useState<Create_Library_Item_Form_Data>({
     title: '',
     item_type: Library_Item_Type.Book,
     description: '',
@@ -42,14 +42,14 @@ export const CreateCatalogItemDialog = ({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, set_is_submitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleInputChange =
-    (field: keyof Create_Catalog_Item_Form_Data) =>
+    (field: keyof Create_Library_Item_Form_Data) =>
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
-      setFormData((prev) => ({
+      set_form_data((prev) => ({
         ...prev,
         [field]:
           field === 'publication_year'
@@ -69,25 +69,27 @@ export const CreateCatalogItemDialog = ({
       }
     };
 
-  const handleSelectChange = (event: SelectChangeEvent<Library_Item_Type>) => {
-    setFormData((prev) => ({
+  const handle_select_change = (
+    event: SelectChangeEvent<Library_Item_Type>
+  ) => {
+    set_form_data((prev) => ({
       ...prev,
       item_type: event.target.value as Library_Item_Type,
     }));
   };
 
-  const validateForm = (): boolean => {
+  const validate_form = (): boolean => {
     const newErrors: Record<string, string> = {};
 
     // Title is required
-    if (!validate_required(formData.title)) {
+    if (!validate_required(form_data.title)) {
       newErrors.title = 'Title is required';
     }
 
     // Validate publication year if provided
     if (
-      formData.publication_year &&
-      !validate_year(formData.publication_year)
+      form_data.publication_year &&
+      !validate_year(form_data.publication_year)
     ) {
       newErrors.publication_year = 'Invalid year';
     }
@@ -96,21 +98,21 @@ export const CreateCatalogItemDialog = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handle_submit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!validateForm()) {
+    if (!validate_form()) {
       return;
     }
 
-    setIsSubmitting(true);
+    set_is_submitting(true);
     setSubmitError(null);
 
     try {
-      await dataService.create_catalog_item(formData);
+      await data_service.create_library_item(form_data);
 
       // Reset form
-      setFormData({
+      set_form_data({
         title: '',
         item_type: Library_Item_Type.Book,
         description: '',
@@ -118,22 +120,22 @@ export const CreateCatalogItemDialog = ({
         congress_code: '',
       });
 
-      onSuccess?.();
-      onClose();
+      on_success?.();
+      on_close();
     } catch (error: Error | unknown) {
-      console.error('Error creating catalog item:', error);
+      console.error('Error creating library item:', error);
       setSubmitError(
-        error instanceof Error ? error.message : 'Failed to create catalog item'
+        error instanceof Error ? error.message : 'Failed to create library item'
       );
     } finally {
-      setIsSubmitting(false);
+      set_is_submitting(false);
     }
   };
 
-  const handleClose = () => {
+  const handle_close = () => {
     if (!isSubmitting) {
       // Reset form when closing
-      setFormData({
+      set_form_data({
         title: '',
         item_type: Library_Item_Type.Book,
         description: '',
@@ -142,22 +144,24 @@ export const CreateCatalogItemDialog = ({
       });
       setErrors({});
       setSubmitError(null);
-      onClose();
+      on_close();
     }
   };
 
   return (
     <Dialog
       open={open}
-      onClose={handleClose}
+      onClose={handle_close}
       maxWidth="sm"
       fullWidth
-      PaperProps={{
-        component: 'form',
-        onSubmit: handleSubmit,
+      slotProps={{
+        paper: {
+          component: 'form',
+          onSubmit: handle_submit,
+        },
       }}
     >
-      <DialogTitle>Create New Catalog Item</DialogTitle>
+      <DialogTitle>Create New Library Item</DialogTitle>
 
       <DialogContent>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -171,7 +175,7 @@ export const CreateCatalogItemDialog = ({
             required
             fullWidth
             label="Title"
-            value={formData.title}
+            value={form_data.title}
             onChange={handleInputChange('title')}
             error={!!errors.title}
             helperText={errors.title}
@@ -181,8 +185,8 @@ export const CreateCatalogItemDialog = ({
           <FormControl fullWidth required>
             <InputLabel>Item Type</InputLabel>
             <Select
-              value={formData.item_type}
-              onChange={handleSelectChange}
+              value={form_data.item_type}
+              onChange={handle_select_change}
               label="Item Type"
               disabled={isSubmitting}
             >
@@ -199,7 +203,7 @@ export const CreateCatalogItemDialog = ({
             label="Description"
             multiline
             rows={3}
-            value={formData.description || ''}
+            value={form_data.description || ''}
             onChange={handleInputChange('description')}
             disabled={isSubmitting}
           />
@@ -208,7 +212,7 @@ export const CreateCatalogItemDialog = ({
             fullWidth
             label="Publication Year"
             type="number"
-            value={formData.publication_year || ''}
+            value={form_data.publication_year || ''}
             onChange={handleInputChange('publication_year')}
             error={!!errors.publication_year}
             helperText={errors.publication_year}
@@ -222,7 +226,7 @@ export const CreateCatalogItemDialog = ({
           <TextField
             fullWidth
             label="Congress Code"
-            value={formData.congress_code || ''}
+            value={form_data.congress_code || ''}
             onChange={handleInputChange('congress_code')}
             disabled={isSubmitting}
             helperText="Library of Congress classification code (optional)"
@@ -231,7 +235,7 @@ export const CreateCatalogItemDialog = ({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose} disabled={isSubmitting}>
+        <Button onClick={handle_close} disabled={isSubmitting}>
           Cancel
         </Button>
         <Button

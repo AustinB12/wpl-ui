@@ -25,8 +25,23 @@ export const CopiesDataGrid = ({
   const [snack, set_snack] = useState<boolean>(false);
 
   const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID', width: 90 },
-    { field: 'title', headerName: 'Title', width: 150, editable: false },
+    {
+      field: 'id',
+      headerName: 'ID',
+      width: 70,
+      valueFormatter: (value) => {
+        if (!value || typeof value !== 'string') return '';
+        const str_val: string = value as string;
+        return str_val.substring(5, str_val.length);
+      },
+    },
+    {
+      field: 'title',
+      headerName: 'Title',
+      width: 200,
+      editable: false,
+      flex: 1,
+    },
     {
       field: 'description',
       headerName: 'Description',
@@ -56,7 +71,7 @@ export const CopiesDataGrid = ({
     {
       field: 'status',
       headerName: 'Status',
-      width: 150,
+      width: 125,
       editable: false,
       renderCell: (params) => {
         return (
@@ -67,7 +82,7 @@ export const CopiesDataGrid = ({
     {
       field: 'condition',
       headerName: 'Condition',
-      width: 150,
+      width: 125,
       editable: false,
       renderCell: (params) => {
         return (

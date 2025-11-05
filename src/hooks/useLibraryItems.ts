@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { data_service } from '../services/dataService';
 
-export const useBranches = () => {
+export const useLibraryItems = () => {
   return useQuery({
-    queryKey: ['branches'],
-    queryFn: () => data_service.get_all_branches(),
+    queryKey: ['library_items'],
+    queryFn: () => data_service.get_all_library_items(),
   });
 };

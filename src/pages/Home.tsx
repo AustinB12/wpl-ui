@@ -9,6 +9,7 @@ import {
   ListItemText,
   Stack,
   Button,
+  Box,
 } from '@mui/material';
 import {
   Assessment,
@@ -107,9 +108,6 @@ export const Home = () => {
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12 }} sx={{ textAlign: 'center' }}>
-          <Logo size={'90%'} />
-        </Grid>
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -212,6 +210,15 @@ export const Home = () => {
           </Card>
         </Grid>
       </Grid>
+
+      <Box
+        sx={{
+          width: 1,
+          height: 150,
+        }}
+      >
+        <Logo size={'100%'} />
+      </Box>
     </Container>
   );
 };

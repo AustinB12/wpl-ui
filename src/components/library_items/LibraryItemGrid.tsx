@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
-import { type Catalog_Item } from '../../types';
+import { type Library_Item } from '../../types';
 import { Snackbar, Alert, Chip, AlertTitle, Fab } from '@mui/material';
-import { CatalogItemDetails } from './CatalogItemDetails';
-import { CreateCatalogItemDialog } from './CreateCatalogItemDialog';
+import { LibraryItemDetails } from './LibraryItemDetails';
+import { CreateLibraryItemDialog } from './CreateLibraryItemDialog';
 import { get_color_for_item_type } from '../../utils/colors';
-import { useCatalogItems } from '../../hooks/useCatalogItems';
+import { useLibraryItems } from '../../hooks/useLibraryItems';
 import { Add } from '@mui/icons-material';
 
 const columns: GridColDef[] = [
@@ -40,25 +40,25 @@ const columns: GridColDef[] = [
   },
 ];
 
-export const CatalogItemGrid = () => {
+export const LibraryItemGrid = () => {
   const [details_open, set_details_open] = useState(false);
   const [create_open, set_create_open] = useState(false);
-  const [selected_item, set_selected_item] = useState<Catalog_Item | null>(
+  const [selected_item, set_selected_item] = useState<Library_Item | null>(
     null
   );
 
-  const { data: rows, isLoading: loading, error, refetch } = useCatalogItems();
+  const { data: rows, isLoading: loading, error, refetch } = useLibraryItems();
 
-  const handle_item_selected = (item: Catalog_Item) => {
+  const handle_item_selected = (item: Library_Item) => {
     set_selected_item(item);
     set_details_open(true);
   };
 
-  const handle_create_catalog_item_clicked = () => {
+  const handle_create_library_item_clicked = () => {
     set_create_open(true);
   };
 
-  const handleCreateSuccess = () => {
+  const handle_create_success = () => {
     // Refetch the data to include the new item
     refetch();
   };
@@ -74,18 +74,18 @@ export const CatalogItemGrid = () => {
           pagination: { paginationModel: { pageSize: 10 } },
         }}
         onRowDoubleClick={(params) =>
-          handle_item_selected(params.row as Catalog_Item)
+          handle_item_selected(params.row as Library_Item)
         }
       />
-      <CatalogItemDetails
+      <LibraryItemDetails
         is_open={details_open}
         item={selected_item}
         onClose={() => set_details_open(false)}
       />
-      <CreateCatalogItemDialog
+      <CreateLibraryItemDialog
         open={create_open}
-        onClose={() => set_create_open(false)}
-        onSuccess={handleCreateSuccess}
+        on_close={() => set_create_open(false)}
+        on_success={handle_create_success}
       />
       <Snackbar
         anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
@@ -100,9 +100,9 @@ export const CatalogItemGrid = () => {
       <Fab
         id="zxzxzx"
         color="primary"
-        onClick={handle_create_catalog_item_clicked}
-        aria-label="Add catalog item"
-        title="Add catalog item"
+        onClick={handle_create_library_item_clicked}
+        aria-label="Add library item"
+        title="Add library item"
         sx={{
           position: 'fixed',
           bottom: '3vh',

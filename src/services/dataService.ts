@@ -3,12 +3,12 @@ import type {
   Transaction,
   Reservation,
   BookFilters,
-  Catalog_Item,
+  Library_Item,
   Item_Copy,
   Branch,
   Patron,
   Book_Form_Data,
-  Create_Catalog_Item_Form_Data,
+  Create_Library_Item_Form_Data,
   Condition,
 } from '../types';
 import { Genre } from '../types';
@@ -56,7 +56,7 @@ const api_request = async <T>(
   }
 };
 
-export const dataService = {
+export const data_service = {
   //! Book operations
 
   async get_books(filters?: BookFilters): Promise<Book[]> {
@@ -83,37 +83,37 @@ export const dataService = {
     const query_string = search_params.toString()
       ? `?${search_params.toString()}`
       : '';
-    const books = await api_request<Book[]>(`/catalog-items${query_string}`);
+    const books = await api_request<Book[]>(`/library-items${query_string}`);
 
-    // Filter only books from catalog items
+    // Filter only books from library items
     return books.filter((item) => item.item_type === 'Book');
   },
 
   async getBookById(id: string): Promise<Book | null> {
     try {
-      // First get the catalog item
-      const catalog_item = await api_request<Catalog_Item>(
-        `/catalog-items/${id}`
+      // First get the library item
+      const library_item = await api_request<Library_Item>(
+        `/library-items/${id}`
       );
 
-      if (!catalog_item || catalog_item.item_type !== 'Book') {
+      if (!library_item || library_item.item_type !== 'Book') {
         return null;
       }
 
       // Then get book-specific details if they exist
-      // For now, we'll construct a basic book from catalog item
+      // For now, we'll construct a basic book from library item
       const book: Book = {
-        id: catalog_item.id,
-        title: catalog_item.title,
-        item_type: catalog_item.item_type,
-        description: catalog_item.description,
-        publication_year: catalog_item.publication_year,
-        congress_code: catalog_item.congress_code,
+        id: library_item.id,
+        title: library_item.title,
+        item_type: library_item.item_type,
+        description: library_item.description,
+        publication_year: library_item.publication_year,
+        congress_code: library_item.congress_code,
         author: '', // These would come from books table
         genre: [],
         publisher: '',
-        cover_img_url: '',
-        catalog_id: catalog_item.id,
+        cover_image_url: '',
+        library_item_id: library_item.id,
       };
 
       return book;
@@ -126,7 +126,7 @@ export const dataService = {
   },
 
   async create_book(book: Book_Form_Data): Promise<Book> {
-    const catalog_item_data = {
+    const library_item_data = {
       title: book.title,
       item_type: 'Book',
       description: book.description,
@@ -134,34 +134,34 @@ export const dataService = {
       congress_code: book.congress_code,
     };
 
-    const created_item = await api_request<Catalog_Item>('/catalog-items', {
+    const created_item = await api_request<Library_Item>('/library-items', {
       method: 'POST',
-      body: JSON.stringify(catalog_item_data),
+      body: JSON.stringify(library_item_data),
     });
 
-    // Convert catalog item back to book format
+    // Convert library item back to book format
     return {
       ...created_item,
       author: book.author || '',
       genre: book?.genre || [],
       publisher: book?.publisher || '',
-      cover_img_url: book?.cover_img_url || '',
-      catalog_id: created_item.id,
+      cover_image_url: book?.cover_image_url || '',
+      library_item_id: created_item.id,
     };
   },
 
   async updateBook(id: string, updates: Partial<Book>): Promise<Book | null> {
     try {
-      const catalog_updates = {
+      const library_item_updates = {
         title: updates.title,
         description: updates.description,
         publication_year: updates.publication_year,
         congress_code: updates.congress_code,
       };
 
-      await api_request(`/catalog-items/${id}`, {
+      await api_request(`/library-items/${id}`, {
         method: 'PUT',
-        body: JSON.stringify(catalog_updates),
+        body: JSON.stringify(library_item_updates),
       });
 
       // Return updated book
@@ -175,7 +175,7 @@ export const dataService = {
   },
 
   async deleteBook(id: string): Promise<boolean> {
-    await api_request(`/catalog-items/${id}`, {
+    await api_request(`/library-items/${id}`, {
       method: 'DELETE',
     });
     return true;
@@ -184,7 +184,7 @@ export const dataService = {
   async getGenres(): Promise<Genre[]> {
     // Since we don't have a dedicated books table with genres in the new API,
     // we'll return a static list of common genres for now
-    // TODO: Implement genre extraction from catalog items or create separate endpoint
+    // TODO: Implement genre extraction from library items or create separate endpoint
     const common_genres = [
       'Fiction',
       'Non-Fiction',
@@ -283,11 +283,11 @@ export const dataService = {
 
   // Reservation operations
   async reserveBook(
-    catalog_item_id: string,
-    patron_id?: number
+    library_item_id: string,
+    patron_id?: string
   ): Promise<Reservation> {
     const reservation_data = {
-      catalog_item_id,
+      library_item_id,
       patron_id,
     };
 
@@ -315,21 +315,21 @@ export const dataService = {
     }
   },
 
-  async get_all_catalog_items(): Promise<Catalog_Item[]> {
-    return await api_request<Catalog_Item[]>('/catalog-items');
+  async get_all_library_items(): Promise<Library_Item[]> {
+    return await api_request<Library_Item[]>('/library-items');
   },
 
-  async create_catalog_item(
-    item: Create_Catalog_Item_Form_Data
-  ): Promise<Catalog_Item> {
-    return await api_request<Catalog_Item>('/catalog-items', {
+  async create_library_item(
+    item: Create_Library_Item_Form_Data
+  ): Promise<Library_Item> {
+    return await api_request<Library_Item>('/library-items', {
       method: 'POST',
       body: JSON.stringify(item),
     });
   },
 
   async get_all_copies_by_item_id(item_id: string): Promise<Item_Copy[]> {
-    return await api_request<Item_Copy[]>(`/item-copies/catalog/${item_id}`);
+    return await api_request<Item_Copy[]>(`/item-copies/item/${item_id}`);
   },
 
   async get_all_copy_ids(): Promise<string[]> {

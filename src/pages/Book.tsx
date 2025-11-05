@@ -14,7 +14,7 @@ import { useParams } from 'react-router-dom';
 import { useBook } from '../hooks/useBooks';
 import { useCopies } from '../hooks/useCopies';
 import { useBranchesContext } from '../hooks/useBranchHooks';
-import { CopiesTable } from '../components/catalog_items/CopiesTable';
+import { CopiesTable } from '../components/library_items/LibraryItemCopiesTable';
 
 export const BookPage = () => {
   const { book_id } = useParams();
@@ -28,7 +28,7 @@ export const BookPage = () => {
     data: copies,
     isLoading: copiesLoading,
     error: copiesError,
-  } = useCopies(book?.catalog_id ?? '');
+  } = useCopies(book?.library_item_id ?? '');
   const { branches } = useBranchesContext();
 
   if (bookLoading) {

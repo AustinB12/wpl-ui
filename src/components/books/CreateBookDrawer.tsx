@@ -142,7 +142,7 @@ const CreateBookDrawer: FC<CreateBookDrawerProps> = ({
       cost: 0,
       congress_code: '',
       publication_year: 2000,
-      cover_img_url: '',
+      cover_image_url: '',
     });
     setErrors({});
     setSubmitError('');

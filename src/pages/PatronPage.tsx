@@ -24,7 +24,7 @@ import {
   Edit,
 } from '@mui/icons-material';
 import { useQuery } from '@tanstack/react-query';
-import { dataService } from '../services/dataService';
+import { data_service } from '../services/dataService';
 import { DataGrid, type GridColDef } from '@mui/x-data-grid';
 import { usePatronById } from '../hooks/usePatrons';
 
@@ -109,7 +109,7 @@ export const PatronPage = () => {
   // Fetch patron's transactions
   const { data: allTransactions, isLoading: transactionsLoading } = useQuery({
     queryKey: ['transactions'],
-    queryFn: () => dataService.getAllTransactions(),
+    queryFn: () => data_service.getAllTransactions(),
   });
 
   if (!patron_id) {

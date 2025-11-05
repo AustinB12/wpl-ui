@@ -1,11 +1,11 @@
 import type { JSX, PropsWithChildren } from 'react';
 import { Container, Typography, Fab } from '@mui/material';
-import React, { useState } from 'react';
+import { useState, memo } from 'react';
 import { Add } from '@mui/icons-material';
-import { CatalogItemGrid } from '../components/catalog_items/CatalogItemGrid';
-import { CreateCatalogItemDialog } from '../components/catalog_items/CreateCatalogItemDialog';
+import { LibraryItemGrid } from '../components/library_items/LibraryItemGrid';
+import { CreateLibraryItemDialog } from '../components/library_items/CreateLibraryItemDialog';
 
-export const ItemCatalog = React.memo(({ children }: PropsWithChildren) => {
+export const LibraryItemsPage = memo(({ children }: PropsWithChildren) => {
   return (
     <Container sx={{ p: 3 }}>
       <Typography
@@ -14,32 +14,32 @@ export const ItemCatalog = React.memo(({ children }: PropsWithChildren) => {
         gutterBottom
         sx={{ fontWeight: 'bold', mb: 3 }}
       >
-        Catalog
+        Items
       </Typography>
       {children}
     </Container>
   );
 });
 
-export const ItemCatalogContent = (): JSX.Element => {
+export const LibraryItemsContent = (): JSX.Element => {
   const [dialog_open, set_dialog_open] = useState(false);
 
-  const handle_create_catalog_item = () => {
+  const handle_create_library_item = () => {
     set_dialog_open(true);
   };
 
-  const handle_create_catalog_item_close = () => {
+  const handle_create_library_item_close = () => {
     set_dialog_open(false);
   };
 
   return (
     <>
-      <CatalogItemGrid />
+      <LibraryItemGrid />
       <Fab
         color="primary"
-        onClick={handle_create_catalog_item}
-        aria-label="Add catalog item"
-        title="Add catalog item"
+        onClick={handle_create_library_item}
+        aria-label="Add library item"
+        title="Add library item"
         sx={{
           position: 'fixed',
           bottom: '3vh',
@@ -48,9 +48,9 @@ export const ItemCatalogContent = (): JSX.Element => {
       >
         <Add />
       </Fab>
-      <CreateCatalogItemDialog
+      <CreateLibraryItemDialog
         open={dialog_open}
-        onClose={handle_create_catalog_item_close}
+        on_close={handle_create_library_item_close}
       />
     </>
   );
