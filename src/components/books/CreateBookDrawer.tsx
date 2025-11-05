@@ -31,7 +31,7 @@ export interface BookFormErrors {
   publication_year?: string;
   genre?: Genre;
   description?: string;
-  cover_img_url?: string;
+  cover_image_url?: string;
 }
 
 interface CreateBookDrawerProps {

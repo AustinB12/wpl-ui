@@ -13,10 +13,10 @@ interface BranchContextType {
   branches: Branch[];
   loading: boolean;
   error: string | null;
-  selectedBranch: Branch | null;
-  setSelectedBranch: (branch: Branch | null) => void;
-  getBranchById: (id: number) => Branch | undefined;
-  refreshBranches: () => Promise<void>;
+  selected_branch: Branch | null;
+  set_selected_branch: (branch: Branch | null) => void;
+  get_branch_by_id: (id: string) => Branch | undefined;
+  refresh_branches: () => Promise<void>;
 }
 
 const Branch_Context = createContext<BranchContextType | undefined>(undefined);
@@ -31,14 +31,14 @@ export const Branch_Provider = ({ children }: PropsWithChildren) => {
     error,
   } = useBranches();
 
-  const getBranchById = useCallback(
-    (id: number): Branch | undefined => {
+  const get_branch_by_id = useCallback(
+    (id: string): Branch | undefined => {
       return branches?.find((branch) => branch.id === id);
     },
     [branches]
   );
 
-  const refreshBranches = useCallback(async () => {
+  const refresh_branches = useCallback(async () => {
     await refetch_branches();
   }, [refetch_branches]);
 
@@ -52,10 +52,10 @@ export const Branch_Provider = ({ children }: PropsWithChildren) => {
     branches: branches || [],
     loading,
     error: error?.message || null,
-    selectedBranch: selected_branch,
-    setSelectedBranch: set_selected_branch,
-    getBranchById,
-    refreshBranches,
+    selected_branch: selected_branch,
+    set_selected_branch,
+    get_branch_by_id,
+    refresh_branches,
   };
 
   return (

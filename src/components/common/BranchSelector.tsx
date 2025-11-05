@@ -26,13 +26,13 @@ export const BranchSelector = ({
   label = 'Branch',
 }: BranchSelectorProps) => {
   const { branches, loading } = useBranchesContext();
-  const { selectedBranch, setSelectedBranch } = useSelectedBranch();
+  const { selected_branch, set_selected_branch } = useSelectedBranch();
 
   const handle_change_branch = (event: SelectChangeEvent) => {
-    const branchId = parseInt(event.target.value);
-    const branch = branches.find((b) => b.id === branchId);
+    const branch_id = event.target.value;
+    const branch = branches.find((b) => b.id === branch_id);
     if (branch) {
-      setSelectedBranch(branch);
+      set_selected_branch(branch);
     }
   };
 
@@ -56,7 +56,7 @@ export const BranchSelector = ({
         label={label}
         labelId="branch-select-label"
         id="branch-select"
-        value={selectedBranch?.id.toString() || ''}
+        value={selected_branch?.id.toString() || ''}
         onChange={handle_change_branch}
       >
         {branches &&

@@ -83,7 +83,7 @@ export interface Book_Form_Data {
 }
 
 export interface Patron {
-  id: number;
+  id: string;
   first_name: string;
   last_name: string;
   balance: number;
@@ -93,7 +93,7 @@ export interface Patron {
 }
 
 export interface Branch {
-  id: number;
+  id: string;
   branch_name: string;
   is_main: boolean;
 }

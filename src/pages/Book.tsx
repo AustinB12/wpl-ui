@@ -200,7 +200,7 @@ export const BookPage = () => {
                   height: 1,
                   overflow: 'clip',
                   background: `url(${
-                    book?.cover_img_url ||
+                    book?.cover_image_url ||
                     'https://m.media-amazon.com/images/I/81aY1lxk+9L._AC_UF1000,1000_QL80_.jpg'
                   })`,
                   backgroundPosition: 'center',
@@ -217,7 +217,7 @@ export const BookPage = () => {
                 >
                   <img
                     src={
-                      book?.cover_img_url ||
+                      book?.cover_image_url ||
                       'https://m.media-amazon.com/images/I/81aY1lxk+9L._AC_UF1000,1000_QL80_.jpg'
                     }
                     alt={book.title}

@@ -18,9 +18,9 @@ interface CopiesTableProps {
 }
 
 export const CopiesTable = ({ copies, branches }: CopiesTableProps) => {
-  const getBranchName = (branchId: number): string => {
+  const get_branch_name = (branch_id: string): string => {
     return (
-      branches.find((branch) => branch.id === branchId)?.branch_name ||
+      branches.find((branch) => branch.id === branch_id)?.branch_name ||
       'Unknown'
     );
   };
@@ -98,9 +98,9 @@ export const CopiesTable = ({ copies, branches }: CopiesTableProps) => {
                     whiteSpace: 'nowrap',
                     maxWidth: { xs: 50, sm: 80 },
                   }}
-                  title={getBranchName(copy.branch_id)}
+                  title={get_branch_name(copy.branch_id)}
                 >
-                  {getBranchName(copy.branch_id)}
+                  {get_branch_name(copy.branch_id)}
                 </Typography>
               </TableCell>
               <TableCell>
