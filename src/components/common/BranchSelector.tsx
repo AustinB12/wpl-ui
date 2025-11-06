@@ -30,7 +30,7 @@ export const BranchSelector = ({
 
   const handle_change_branch = (event: SelectChangeEvent) => {
     const branch_id = event.target.value;
-    const branch = branches.find((b) => b.id === branch_id);
+    const branch = branches.find((b) => b.id == branch_id);
     if (branch) {
       set_selected_branch(branch);
     }
