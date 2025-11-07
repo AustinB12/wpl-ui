@@ -23,9 +23,17 @@ const columns: GridColDef[] = [
     headerName: 'Name',
     flex: 2,
     renderCell: (params: GridRenderCellParams) => (
-      <Link to={`/patron/${params.row.id}`}>
+      <Link
+        to={`/patron/${params.row.id}`}
+        style={{ textDecoration: 'none', height: '100%', display: 'block' }}
+      >
         <Typography
-          sx={{ textDecoration: 'none', color: 'primary' }}
+          sx={(theme) => ({
+            textDecoration: 'none',
+            color: `color-mix(in srgb, ${theme.palette.primary.main} 50%, ${theme.palette.text.primary} 50%)`,
+            display: 'inline',
+            fontWeight: 500,
+          })}
         >{`${params.value} ${params.row.last_name}`}</Typography>
       </Link>
     ),
