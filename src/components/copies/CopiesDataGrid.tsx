@@ -1,6 +1,7 @@
 import {
   DataGrid,
   type GridColDef,
+  type GridDensity,
   type GridRowParams,
 } from '@mui/x-data-grid';
 import { Alert, Chip, Snackbar } from '@mui/material';
@@ -12,17 +13,24 @@ import {
 import { useAllCopies } from '../../hooks/useCopies';
 import type { Branch } from '../../types';
 import { useBranches } from '../../hooks/useBranches';
+import { useBranchContext } from '../../contexts/Branch_Context';
 import { useState } from 'react';
+import { CustomToolbar } from '../common/CustomDataGridToolbar';
 
 export const CopiesDataGrid = ({
   on_copy_selected,
 }: {
   on_copy_selected: (copy_id: number) => void;
 }) => {
-  const { data: copies, isLoading: loading } = useAllCopies();
+  const { selected_branch } = useBranchContext();
+  const { data: copies, isLoading: loading } = useAllCopies(
+    selected_branch?.id
+  );
   const { data: branches } = useBranches();
 
   const [snack, set_snack] = useState<boolean>(false);
+
+  const [density, set_density] = useState<GridDensity>('standard');
 
   const columns: GridColDef[] = [
     {
@@ -134,8 +142,12 @@ export const CopiesDataGrid = ({
           pagination: { paginationModel: { pageSize: 25 } },
         }}
         showToolbar
+        slots={{ toolbar: CustomToolbar }}
         slotProps={{
           toolbar: {
+            density: density,
+            onDensityChange: set_density,
+            label: 'Copies',
             printOptions: { disableToolbarButton: true },
             csvOptions: { disableToolbarButton: true },
           },
