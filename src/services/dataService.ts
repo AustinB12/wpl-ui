@@ -423,8 +423,9 @@ export const data_service = {
     return await api_request<Branch[]>('/branches');
   },
 
-  async get_all_patrons(): Promise<Patron[]> {
-    return await api_request<Patron[]>('/patrons');
+  async get_all_patrons(just_active: boolean = true): Promise<Patron[]> {
+    const url = just_active ? '/patrons?active_only=true' : '/patrons';
+    return await api_request<Patron[]>(url);
   },
 
   async get_patron_by_id(patron_id: number): Promise<Patron | null> {

@@ -166,16 +166,16 @@ export const HomePage = () => {
                 </ActionLink>
               </Stack>
               <Stack sx={{ flexGrow: 1, gap: 1 }}>
-                <ActionLink url="/reshelve">
+                {/* <ActionLink url="/reshelve">
                   <ActionButton
                     label="Reshelve Items"
                     key="reshelve-button"
                     icon={<Shelves />}
                   />
-                </ActionLink>
+                </ActionLink> */}
                 <ActionLink url="/reshelve-new">
                   <ActionButton
-                    label="Reshelve Items (New)"
+                    label="Reshelve Items"
                     key="reshelve-new-button"
                     icon={<Shelves />}
                   />

@@ -9,7 +9,7 @@ import {
 import { useState } from 'react';
 import { useAllPatrons } from '../../hooks/usePatrons';
 import { format_date, is_overdue } from '../../utils/dateUtils';
-import { Alert, Box, Chip, Snackbar, Typography } from '@mui/material';
+import { Alert, Box, Snackbar, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { CustomToolbar } from '../common/CustomDataGridToolbar';
 
@@ -97,20 +97,20 @@ const columns: GridColDef[] = [
   },
   { field: 'email', headerName: 'Email', flex: 2 },
   { field: 'phone', headerName: 'Phone #', flex: 2 },
-  {
-    field: 'is_active',
-    headerName: 'Status',
-    flex: 1,
-    renderCell: (params) => (
-      <>
-        {params.value ? (
-          <Chip variant="outlined" color="success" label="Active"></Chip>
-        ) : (
-          <Chip variant="outlined" color="error" label="Inactive"></Chip>
-        )}
-      </>
-    ),
-  },
+  // {
+  //   field: 'is_active',
+  //   headerName: 'Status',
+  //   flex: 1,
+  //   renderCell: (params) => (
+  //     <>
+  //       {params.value ? (
+  //         <Chip variant="outlined" color="success" label="Active"></Chip>
+  //       ) : (
+  //         <Chip variant="outlined" color="error" label="Inactive"></Chip>
+  //       )}
+  //     </>
+  //   ),
+  // },
 ];
 
 interface PatronsDataGridProps {

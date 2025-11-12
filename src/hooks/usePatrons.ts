@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { data_service } from '../services/dataService';
 import type { Patron_Form_Data } from '../types';
 
-export const useAllPatrons = () => {
+export const useAllPatrons = (just_active: boolean = true) => {
   return useQuery({
     queryKey: ['all_patrons'],
-    queryFn: () => data_service.get_all_patrons(),
+    queryFn: () => data_service.get_all_patrons(just_active),
   });
 };
 

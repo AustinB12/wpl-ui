@@ -142,7 +142,7 @@ export const ReshelveItemsPageNew = () => {
         variant="extended"
         sx={{ position: 'absolute', bottom: 16, right: 16 }}
       >
-        Mark As Reshelved
+        Mark As Available
       </Fab>
 
       <Snackbar
