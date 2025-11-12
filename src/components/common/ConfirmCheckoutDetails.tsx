@@ -1,4 +1,4 @@
-import { type FC } from 'react';
+import { type FC, type ReactNode } from 'react';
 import {
   Card,
   CardContent,
@@ -8,32 +8,126 @@ import {
   Avatar,
   Alert,
   AlertTitle,
-  Button,
   Skeleton,
   Grid,
   Container,
+  Stack,
+  LinearProgress,
 } from '@mui/material';
-import { Person, LibraryBooks, CalendarToday } from '@mui/icons-material';
-import { format_date, is_overdue } from '../../utils/dateUtils';
+import { Person, LibraryBooks } from '@mui/icons-material';
+import {
+  calculate_due_date,
+  format_date,
+  is_overdue,
+} from '../../utils/dateUtils';
 import { usePatronById } from '../../hooks/usePatrons';
 import { useCopyById } from '../../hooks/useCopies';
+import type { Item_Copy } from '../../types';
+import { useLibraryItemById } from '../../hooks/useLibraryItems';
+import { ItemCopyConditionChip } from '../copies/ItemCopyConditionChip';
 
 interface ConfirmCheckoutDetailsProps {
   patron_id: number;
-  copy_id: number;
-  due_date: Date;
-  on_confirm: () => void;
-  on_cancel: () => void;
+  copy: Item_Copy;
+  was_successful: boolean | null;
+  loading: boolean;
 }
+
+// Helper component for info rows
+interface InfoRowProps {
+  label: string;
+  value: string | ReactNode;
+  highlight?: boolean;
+}
+
+const InfoRow: FC<InfoRowProps> = ({ label, value, highlight }) => (
+  <Box
+    sx={(theme) => ({
+      flex: 1,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      p: 1.5,
+      bgcolor: highlight ? 'background.default' : 'background.default',
+      borderRadius: 1.5,
+      ...(highlight && {
+        border: '1.5px solid',
+        borderColor: theme.palette.secondary.main,
+      }),
+    })}
+  >
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      sx={{ fontWeight: highlight ? 600 : 400 }}
+    >
+      {label}
+    </Typography>
+    {typeof value === 'string' ? (
+      <Typography variant="body2" sx={{ fontWeight: highlight ? 700 : 600 }}>
+        {value}
+      </Typography>
+    ) : (
+      value
+    )}
+  </Box>
+);
+
+// Helper component for card headers
+interface CardHeaderSectionProps {
+  icon: ReactNode;
+  overline: string;
+  title: string;
+  avatar_src?: string;
+  bgcolor: string;
+}
+
+const CardHeaderSection: FC<CardHeaderSectionProps> = ({
+  icon,
+  overline,
+  title,
+  avatar_src,
+  bgcolor,
+}) => (
+  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+    <Avatar
+      sx={{
+        bgcolor: bgcolor,
+        width: 56,
+        height: 56,
+        mr: 2,
+      }}
+      src={avatar_src}
+    >
+      {icon}
+    </Avatar>
+    <Box>
+      <Typography
+        variant="overline"
+        sx={{ color: 'text.secondary', fontSize: '0.7rem' }}
+      >
+        {overline}
+      </Typography>
+      <Typography
+        variant="h6"
+        component="h3"
+        sx={{ fontWeight: 600, lineHeight: 1.2 }}
+      >
+        {title}
+      </Typography>
+    </Box>
+  </Box>
+);
 
 export const ConfirmCheckoutDetails: FC<ConfirmCheckoutDetailsProps> = ({
   patron_id,
-  copy_id,
-  due_date,
-  on_cancel,
+  copy,
+  loading,
 }) => {
   const { data: patron, isLoading: loading_patron } = usePatronById(patron_id);
-  const { data: item_copy, isLoading: loading_copy } = useCopyById(copy_id);
+  const { data: item_copy, isLoading: loading_copy } = useCopyById(copy.id);
+  const { data: library_item, isLoading: loading_library_item } =
+    useLibraryItemById(copy.library_item_id);
 
   const hasOutstandingBalance = patron ? patron.balance > 0 : false;
   const isCardExpired = patron
@@ -41,7 +135,7 @@ export const ConfirmCheckoutDetails: FC<ConfirmCheckoutDetailsProps> = ({
       is_overdue(new Date(patron.card_expiration_date))
     : false;
 
-  const is_any_loading = loading_patron || loading_copy;
+  const is_any_loading = loading_patron || loading_copy || loading_library_item;
 
   // If still loading essential data, show loading skeleton
   if (is_any_loading) {
@@ -125,39 +219,13 @@ export const ConfirmCheckoutDetails: FC<ConfirmCheckoutDetailsProps> = ({
               </CardContent>
             </Card>
           </Grid>
-
-          {/* Due Date Loading Skeleton */}
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Card variant="outlined">
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Skeleton
-                    variant="circular"
-                    width={40}
-                    height={40}
-                    sx={{ mr: 2 }}
-                  />
-                  <Skeleton variant="text" width={120} height={32} />
-                </Box>
-                <Box sx={{ ml: 7 }}>
-                  <Skeleton
-                    variant="text"
-                    width={150}
-                    height={32}
-                    sx={{ mb: 1 }}
-                  />
-                  <Skeleton variant="text" width={200} height={20} />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>
       </Container>
     );
   }
 
   // If data couldn't be loaded
-  if (!patron || !item_copy) {
+  if (!patron || !item_copy || !library_item) {
     return (
       <Container sx={{ p: 2 }}>
         <Typography variant="h5" component="h2" gutterBottom sx={{ mb: 3 }}>
@@ -168,24 +236,11 @@ export const ConfirmCheckoutDetails: FC<ConfirmCheckoutDetailsProps> = ({
           Unable to load the required information for this checkout. Please try
           again.
         </Alert>
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 2,
-            justifyContent: 'flex-end',
-            pt: 2,
-            mt: 3,
-          }}
-        >
-          <Button variant="outlined" onClick={on_cancel} size="large">
-            Go Back
-          </Button>
-        </Box>
       </Container>
     );
   }
   return (
-    <Container sx={{ p: 2 }}>
+    <Container maxWidth="xl" sx={{ p: 2 }}>
       {/* Warnings */}
       {(hasOutstandingBalance || isCardExpired) && (
         <Box sx={{ mb: 3 }}>
@@ -206,149 +261,151 @@ export const ConfirmCheckoutDetails: FC<ConfirmCheckoutDetailsProps> = ({
         </Box>
       )}
 
+      <Typography
+        variant="h5"
+        component="h2"
+        gutterBottom
+        sx={{ mb: 3, fontWeight: 600 }}
+      >
+        Confirm Checkout Details
+      </Typography>
+
       <Grid container spacing={3}>
         {/* Patron Information */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar
-                  sx={{ bgcolor: 'primary.main', mr: 2 }}
-                  src={patron.image_url}
-                >
-                  <Person />
-                </Avatar>
-                <Typography variant="h6" component="h3">
-                  Patron Information
-                </Typography>
-              </Box>
-              <Box sx={{ ml: 7 }}>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {patron.first_name} {patron.last_name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Patron ID: {patron.id}
-                </Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mr: 1 }}
-                  >
-                    Balance:
-                  </Typography>
-                  <Chip
-                    label={`$${patron.balance.toFixed(2)}`}
-                    size="small"
-                    color={patron.balance > 0 ? 'warning' : 'success'}
-                    variant="outlined"
+          <Card
+            sx={{
+              height: '100%',
+              borderRadius: 3,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: 4,
+              },
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <CardHeaderSection
+                icon={<Person sx={{ fontSize: 32 }} />}
+                overline="Patron"
+                title={`${patron.first_name} ${patron.last_name}`}
+                avatar_src={patron.image_url}
+                bgcolor="primary.main"
+              />
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Stack direction={'row'} spacing={2} sx={{ width: 1 }}>
+                  <InfoRow label="Patron ID" value={`#${patron.id}`} />
+                  <InfoRow
+                    label="Balance"
+                    value={
+                      <Chip
+                        label={`$${patron.balance.toFixed(2)}`}
+                        size="small"
+                        color={patron.balance > 0 ? 'warning' : 'success'}
+                        sx={{ fontWeight: 600 }}
+                      />
+                    }
                   />
-                </Box>
-                {patron.card_expiration_date && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mr: 1 }}
-                    >
-                      Card Expires:
-                    </Typography>
-                    <Chip
-                      label={format_date(patron.card_expiration_date)}
-                      size="small"
-                      color={isCardExpired ? 'error' : 'default'}
-                      variant="outlined"
+                </Stack>
+                <InfoRow label="Email" value={patron.email} />
+                <Stack direction={'row'} spacing={2} sx={{ width: 1 }}>
+                  <InfoRow label="Phone" value={patron.phone} />
+                  {patron.card_expiration_date && (
+                    <InfoRow
+                      label="Card Expires"
+                      value={
+                        <Chip
+                          label={format_date(patron.card_expiration_date)}
+                          size="small"
+                          color={isCardExpired ? 'error' : 'default'}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      }
                     />
-                  </Box>
-                )}
+                  )}
+                </Stack>
               </Box>
             </CardContent>
           </Card>
         </Grid>
 
         {/* Item Information */}
-
         <Grid size={{ xs: 12, sm: 6 }}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
-                  <LibraryBooks />
-                </Avatar>
-                <Typography variant="h6" component="h3">
-                  Item Information
-                </Typography>
-              </Box>
-              <Box sx={{ ml: 7 }}>
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {item_copy.id}
-                </Typography>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 1 }}
-                >
-                  <Chip
-                    label={item_copy.id}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                  <Chip
-                    label={item_copy.condition || 'Good'}
-                    size="small"
-                    color="default"
-                    variant="outlined"
-                  />
-                </Box>
+          <Card
+            sx={{
+              height: '100%',
+              borderRadius: 3,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: 4,
+              },
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <CardHeaderSection
+                icon={<LibraryBooks sx={{ fontSize: 32 }} />}
+                overline="Library Item"
+                title={library_item.title}
+                bgcolor="secondary.main"
+              />
+
+              {library_item.description && (
                 <Typography
                   variant="body2"
-                  color="text.secondary"
-                  sx={{ mt: 1 }}
+                  sx={{
+                    color: 'text.secondary',
+                    mb: 2,
+                    fontStyle: 'italic',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
                 >
-                  Copy ID: {item_copy.id}
+                  {library_item.description}
                 </Typography>
-                {item_copy.id && (
-                  <Typography variant="body2" color="text.secondary">
-                    Published: {item_copy.id}
-                  </Typography>
-                )}
-                {item_copy.id && (
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{ mt: 1 }}
-                  >
-                    {item_copy.id}
-                  </Typography>
-                )}
+              )}
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Stack direction={'row'} spacing={2} sx={{ width: 1 }}>
+                  <InfoRow label="Copy ID" value={`#${item_copy.id}`} />
+                  <InfoRow
+                    label="Condition"
+                    value={
+                      <ItemCopyConditionChip
+                        condition={item_copy?.condition || 'Good'}
+                      />
+                    }
+                  />
+                </Stack>
+                <Stack direction={'row'} spacing={2} sx={{ width: 1 }}>
+                  <InfoRow
+                    label="Published"
+                    value={library_item.publication_year || 'N/A'}
+                  />
+                  {copy?.branch_name && (
+                    <InfoRow label="Location" value={copy.branch_name} />
+                  )}
+                </Stack>
+                <InfoRow
+                  label="Due Date"
+                  value={format_date(
+                    calculate_due_date(
+                      library_item.item_type,
+                      library_item?.publication_year || 0
+                    )
+                  )}
+                  highlight
+                />
               </Box>
             </CardContent>
           </Card>
         </Grid>
-
-        {/* Due Date Information */}
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <Card variant="outlined">
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
-                  <CalendarToday />
-                </Avatar>
-                <Typography variant="h6" component="h3">
-                  Due Date
-                </Typography>
-              </Box>
-              <Box sx={{ ml: 7 }}>
-                <Typography variant="h6" color="primary.main">
-                  {format_date(due_date)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Item must be returned by this date
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+        {loading && (
+          <Grid size={12}>
+            <LinearProgress sx={{ width: 1, height: '0.5rem' }} />
+          </Grid>
+        )}
       </Grid>
     </Container>
   );

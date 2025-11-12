@@ -20,3 +20,10 @@ export const useCreateLibraryItem = (options?: {
     onError: options?.onError,
   });
 };
+
+export const useLibraryItemById = (item_id: number) => {
+  return useQuery({
+    queryKey: ['library_item', item_id],
+    queryFn: () => data_service.get_library_item_by_id(item_id),
+  });
+};

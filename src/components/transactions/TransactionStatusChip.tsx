@@ -7,16 +7,16 @@ export function TransactionStatusChip({
 }: {
   status: Transaction_Status;
 }): JSX.Element {
-  switch (status) {
-    case 'Active':
+  switch (status.toUpperCase()) {
+    case 'ACTIVE':
       return <Chip variant="outlined" label="Active" color="info" />;
-    case 'Returned':
+    case 'RETURNED':
       return <Chip variant="outlined" label="Returned" color="primary" />;
-    case 'Overdue':
+    case 'OVERDUE':
       return <Chip variant="outlined" label="Overdue" color="error" />;
-    case 'Lost':
+    case 'LOST':
       return <Chip variant="outlined" label="Lost" color="success" />;
-    case 'Completed':
+    case 'COMPLETED':
       return <Chip variant="outlined" label="Completed" color="warning" />;
     default:
       return <Chip variant="outlined" label="Unknown" />;

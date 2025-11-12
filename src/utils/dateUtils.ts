@@ -1,4 +1,6 @@
 import { format, isAfter, parseISO } from 'date-fns';
+import type { Library_Item_Type } from '../types';
+import dayjs from 'dayjs';
 
 export const format_date = (date: string | Date): string => {
   const dateObj = typeof date === 'string' ? parseISO(date) : date;
@@ -31,3 +33,18 @@ export const calculate_fine = (
   const days_overdue = calculate_days_overdue(due_date);
   return days_overdue * finePerDay;
 };
+
+const now = new Date();
+
+export function calculate_due_date(
+  item_type: Library_Item_Type,
+  pub_year: number
+): Date {
+  if (item_type === 'VIDEO') {
+    if (now.getFullYear() === pub_year) {
+      return dayjs().add(3, 'day').toDate(); // 3 days for new releases
+    }
+    return dayjs().add(14, 'day').toDate(); // 2 weeks for other videos
+  }
+  return dayjs().add(28, 'day').toDate(); // Default 4 weeks for other item types
+}

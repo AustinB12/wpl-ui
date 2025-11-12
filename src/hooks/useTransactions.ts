@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { data_service } from '../services/dataService';
-import type { Condition } from '../types';
+import type { Item_Condition } from '../types';
 
 export const useTransactions = () => {
   return useQuery({
@@ -30,12 +30,10 @@ export const useCheckoutBook = () => {
     mutationFn: ({
       patron_id,
       copy_id,
-      due_date,
     }: {
       patron_id: number;
       copy_id: number;
-      due_date?: Date;
-    }) => data_service.checkoutBook(patron_id, copy_id, due_date),
+    }) => data_service.checkoutBook(patron_id, copy_id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -49,16 +47,16 @@ export const useReturnBook = () => {
   return useMutation({
     mutationFn: ({
       copy_id,
-      new_condition,
       new_location_id,
+      new_condition,
       notes,
     }: {
       copy_id: number;
-      new_condition?: Condition;
-      new_location_id?: number;
+      new_location_id: number;
+      new_condition?: Item_Condition;
       notes?: string;
     }) =>
-      data_service.return_book(copy_id, new_condition, new_location_id, notes),
+      data_service.return_book(copy_id, new_location_id, new_condition, notes),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });

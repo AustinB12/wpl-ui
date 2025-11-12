@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/common/Layout';
 import { HomePage } from './pages/HomePage';
 import { LibraryItemsPage } from './pages/LibraryItemsPage';
-import { MyBooks } from './pages/MyBooks';
 import { DashboardPage } from './pages/DashboardPage';
 import { Patrons } from './pages/Patrons';
 import { CheckInItem } from './pages/CheckInItem';
@@ -15,6 +14,8 @@ import { MarkAvailablePage } from './pages/MarkAvailablePage';
 import { ReshelveItemPage } from './pages/ReshelveItemPage';
 import { GlobalStyles, useTheme } from '@mui/material';
 import { ReservationsPage } from './pages/ReservationsPage';
+import { ReshelveItemsPageNew } from './pages/ReshelveItemsPageNew';
+import { LibraryItemCopiesPage } from './pages/LibraryItemCopiesPage';
 
 const queryClient = new QueryClient();
 
@@ -45,16 +46,20 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="dashboard" element={<DashboardPage />} />
           <Route path="library-items" element={<LibraryItemsPage />} />
-          <Route path="my-books" element={<MyBooks />} />
+          <Route
+            path="library-item-copies"
+            element={<LibraryItemCopiesPage />}
+          />
           <Route path="patrons" element={<Patrons />} />
           <Route path="patron">
             <Route path=":patron_id" element={<PatronPage />} />
           </Route>
           <Route path="transactions" element={<TransactionsPage />} />
-          <Route path="checkin" element={<CheckInItem />} />
-          <Route path="checkout" element={<CheckOutItem />} />
+          <Route path="check-in" element={<CheckInItem />} />
+          <Route path="check-out" element={<CheckOutItem />} />
           <Route path="reservations" element={<ReservationsPage />} />
           <Route path="reshelve" element={<ReshelveItemPage />} />
+          <Route path="reshelve-new" element={<ReshelveItemsPageNew />} />
           <Route path="available" element={<MarkAvailablePage />} />
           <Route path="books">
             <Route path=":book_id" element={<BookPage />} />

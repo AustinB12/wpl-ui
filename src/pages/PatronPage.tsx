@@ -46,6 +46,7 @@ import {
 import { useGetTransactionsByPatronId } from '../hooks/useTransactions';
 import { format_date } from '../utils/dateUtils';
 import type { Patron_Form_Data } from '../types';
+import { TransactionStatusChip } from '../components/transactions/TransactionStatusChip';
 
 // Helper Components
 interface InfoItemProps {
@@ -137,14 +138,7 @@ const cols: GridColDef[] = [
     field: 'status',
     headerName: 'Status',
     width: 120,
-    renderCell: (params) => (
-      <Chip
-        label={params.value}
-        color={params.value === 'Active' ? 'success' : 'default'}
-        size="small"
-        variant="outlined"
-      />
-    ),
+    renderCell: (params) => <TransactionStatusChip status={params.value} />,
   },
   {
     field: 'fine_amount',

@@ -10,7 +10,9 @@ import type {
   Patron_Form_Data,
   Book_Form_Data,
   Create_Library_Item_Form_Data,
-  Condition,
+  Item_Condition,
+  Item_Copy_Results,
+  Checkin_Receipt,
 } from '../types';
 import { Genre } from '../types';
 
@@ -206,37 +208,34 @@ export const data_service = {
   // Transaction operations
   async checkoutBook(
     patron_id: number,
-    copy_id: number,
-    due_date?: Date
-  ): Promise<Transaction> {
+    copy_id: number
+  ): Promise<Transaction & Patron & Item_Copy & Library_Item> {
     const checkout_data = {
       copy_id,
       patron_id,
-      due_date: due_date?.toISOString() || undefined,
     };
 
-    const transaction = await api_request<Transaction>(
-      '/transactions/checkout',
-      {
-        method: 'POST',
-        body: JSON.stringify(checkout_data),
-      }
-    );
+    const receipt = await api_request<
+      Transaction & Patron & Item_Copy & Library_Item
+    >('/transactions/checkout', {
+      method: 'POST',
+      body: JSON.stringify(checkout_data),
+    });
 
-    return transaction;
+    return receipt;
   },
 
   async return_book(
     copy_id: number,
-    new_condition?: Condition,
-    new_location_id?: number,
+    new_location_id: number,
+    new_condition?: Item_Condition,
     notes?: string
-  ): Promise<Transaction | null> {
+  ): Promise<Checkin_Receipt | null> {
     try {
       const checkin_data = {
         copy_id,
-        new_condition,
         new_location_id,
+        new_condition,
         notes,
       };
 
@@ -249,7 +248,7 @@ export const data_service = {
       );
 
       // Get the updated transaction
-      return await api_request<Transaction>(
+      return await api_request<Checkin_Receipt>(
         `/transactions/${result.transaction_id}`
       );
     } catch (error: Error | unknown) {
@@ -260,8 +259,11 @@ export const data_service = {
     }
   },
 
-  async getAllTransactions(): Promise<Transaction[]> {
-    return await api_request<Transaction[]>('/transactions');
+  async getAllTransactions(order_by?: string): Promise<Transaction[]> {
+    const query = order_by
+      ? `/transactions?order_by=${order_by}`
+      : '/transactions';
+    return await api_request<Transaction[]>(query);
   },
 
   async getTransactionsByPatronId(patron_id: number): Promise<Transaction[]> {
@@ -285,6 +287,23 @@ export const data_service = {
 
   async getActiveTransactions(): Promise<Transaction[]> {
     return await api_request<Transaction[]>('/transactions?status=Active');
+  },
+
+  async reshelve_item(copy_id: number): Promise<number | null> {
+    try {
+      const result = await api_request<number>(
+        `/transactions/reshelve/${copy_id}`,
+        {
+          method: 'PUT',
+        }
+      );
+      return result;
+    } catch (error: Error | unknown) {
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      throw error;
+    }
   },
 
   // Reservation operations
@@ -325,6 +344,17 @@ export const data_service = {
     return await api_request<Library_Item[]>('/library-items');
   },
 
+  async get_library_item_by_id(item_id: number): Promise<Library_Item | null> {
+    try {
+      return await api_request<Library_Item>(`/library-items/${item_id}`);
+    } catch (error: Error | unknown) {
+      if (error instanceof Error && error.message.includes('404')) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
   async create_library_item(
     item: Create_Library_Item_Form_Data
   ): Promise<Library_Item> {
@@ -359,6 +389,34 @@ export const data_service = {
       }
       throw error;
     }
+  },
+
+  async get_checked_out_copies(
+    branch_id: number
+  ): Promise<Item_Copy_Results[]> {
+    const url = `/item-copies/checked-out?branch_id=${branch_id}`;
+    return await api_request<Item_Copy_Results[]>(url);
+  },
+
+  async get_unshelved_copies(branch_id?: number): Promise<Item_Copy_Results[]> {
+    const url = branch_id
+      ? `/item-copies/unshelved?branch_id=${branch_id}`
+      : '/item-copies/unshelved';
+    return await api_request<Item_Copy_Results[]>(url);
+  },
+
+  async create_copy(copy_data: {
+    library_item_id: number;
+    owning_branch_id: number;
+    condition?: string;
+    status?: string;
+    cost?: number;
+    notes?: string;
+  }): Promise<Item_Copy> {
+    return await api_request<Item_Copy>('/item-copies', {
+      method: 'POST',
+      body: JSON.stringify(copy_data),
+    });
   },
 
   async get_all_branches(): Promise<Branch[]> {

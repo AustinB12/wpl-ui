@@ -9,8 +9,9 @@ import {
   Skeleton,
 } from '@mui/material';
 import { LibraryBooks, EventNote, AttachMoney } from '@mui/icons-material';
-import type { FC } from 'react';
+import type { FC, PropsWithChildren } from 'react';
 import { useStats } from '../hooks/useStats';
+import { Link } from 'react-router-dom';
 
 export const DashboardPage: FC = () => {
   const { data, isLoading, error } = useStats();
@@ -28,18 +29,20 @@ export const DashboardPage: FC = () => {
 
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ height: '100%' }}>
+          <DashboardCard>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <LibraryBooks sx={{ mr: 1, color: 'primary.main' }} />
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  sx={{ fontWeight: 600 }}
-                >
-                  Items Borrowed
-                </Typography>
-              </Box>
+              <Link to="/library-items" style={{ textDecoration: 'none' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <LibraryBooks sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography
+                    variant="h6"
+                    component="h3"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Items Borrowed
+                  </Typography>
+                </Box>
+              </Link>
               {isLoading && <Skeleton variant="text" width={100} height={30} />}
               {error && <Typography>-</Typography>}
               {data && !isLoading && !error && (
@@ -51,22 +54,24 @@ export const DashboardPage: FC = () => {
                 </Typography>
               )}
             </CardContent>
-          </Card>
+          </DashboardCard>
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ height: '100%' }}>
+          <DashboardCard>
             <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <EventNote sx={{ mr: 1, color: 'secondary.main' }} />
-                <Typography
-                  variant="h6"
-                  component="h3"
-                  sx={{ fontWeight: 600 }}
-                >
-                  Reservations
-                </Typography>
-              </Box>
+              <Link to="/reservations" style={{ textDecoration: 'none' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <EventNote sx={{ mr: 1, color: 'secondary.main' }} />
+                  <Typography
+                    variant="h6"
+                    component="h3"
+                    sx={{ fontWeight: 600 }}
+                  >
+                    Reservations
+                  </Typography>
+                </Box>
+              </Link>
               {isLoading && <Skeleton variant="text" width={100} height={30} />}
               {error && <Typography>-</Typography>}
               {data && !isLoading && !error && (
@@ -78,11 +83,11 @@ export const DashboardPage: FC = () => {
                 </Typography>
               )}
             </CardContent>
-          </Card>
+          </DashboardCard>
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card sx={{ height: '100%' }}>
+          <DashboardCard>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <AttachMoney sx={{ mr: 1, color: 'error.main' }} />
@@ -105,13 +110,13 @@ export const DashboardPage: FC = () => {
                 </Typography>
               )}
             </CardContent>
-          </Card>
+          </DashboardCard>
         </Grid>
       </Grid>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <Card sx={{ height: '100%' }}>
+        <Grid size={{ xs: 12 }}>
+          <DashboardCard>
             <CardContent>
               <Typography
                 variant="h6"
@@ -149,30 +154,20 @@ export const DashboardPage: FC = () => {
                       ],
                     },
                   ]}
-                  width={200}
-                  height={200}
+                  width={300}
+                  height={400}
                 />
               )}
             </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Typography
-                variant="h6"
-                component="h3"
-                gutterBottom
-                sx={{ fontWeight: 600 }}
-              >
-                TODO
-              </Typography>
-              <Typography color="text.secondary">-</Typography>
-            </CardContent>
-          </Card>
+          </DashboardCard>
         </Grid>
       </Grid>
     </Container>
   );
 };
+
+function DashboardCard({ children }: PropsWithChildren) {
+  return (
+    <Card sx={{ height: 1, borderRadius: 3, boxShadow: 3 }}>{children}</Card>
+  );
+}

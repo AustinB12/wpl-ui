@@ -4,30 +4,27 @@ import {
   type GridDensity,
   type GridRowParams,
 } from '@mui/x-data-grid';
-import { Alert, Chip, Snackbar } from '@mui/material';
-import {
-  get_condition_color,
-  get_status_color,
-  get_color_for_item_type,
-} from '../../utils/colors';
+import { Alert, Snackbar } from '@mui/material';
 import { useAllCopies } from '../../hooks/useCopies';
-import type { Branch } from '../../types';
-import { useBranches } from '../../hooks/useBranches';
 import { useBranchContext } from '../../contexts/Branch_Context';
 import { useState } from 'react';
 import { CustomToolbar } from '../common/CustomDataGridToolbar';
+import ItemTypeChip from '../library_items/ItemTypeChip';
+import { ItemCopyStatusChip } from './ItemCopyStatusChip';
+import { ItemCopyConditionChip } from './ItemCopyConditionChip';
+import type { Item_Copy } from '../../types';
 
 export const CopiesDataGrid = ({
   on_copy_selected,
+  just_available = false,
 }: {
-  on_copy_selected: (copy_id: number) => void;
+  on_copy_selected?: (copy_id: Item_Copy) => void;
+  just_available?: boolean;
 }) => {
   const { selected_branch } = useBranchContext();
   const { data: copies, isLoading: loading } = useAllCopies(
     selected_branch?.id
   );
-  const { data: branches } = useBranches();
-
   const [snack, set_snack] = useState<boolean>(false);
 
   const [density, set_density] = useState<GridDensity>('standard');
@@ -36,39 +33,27 @@ export const CopiesDataGrid = ({
     {
       field: 'id',
       headerName: 'ID',
-      width: 70,
-      valueFormatter: (value) => {
-        if (!value || typeof value !== 'string') return '';
-        const str_val: string = value as string;
-        return str_val.substring(5, str_val.length);
-      },
+      width: 90,
+      valueGetter: (value) => Number(value),
     },
     {
       field: 'title',
       headerName: 'Title',
-      width: 200,
+      width: 250,
       editable: false,
-      flex: 1,
     },
     {
       field: 'description',
       headerName: 'Description',
-      width: 120,
+      width: 200,
       editable: false,
     },
     {
       field: 'item_type',
       headerName: 'Type',
-      width: 110,
+      width: 150,
       editable: false,
-      renderCell: (params) => {
-        return (
-          <Chip
-            label={params.value}
-            sx={{ backgroundColor: get_color_for_item_type(params.value) }}
-          />
-        );
-      },
+      renderCell: (params) => <ItemTypeChip item_type={params.value} />,
     },
     {
       field: 'publication_year',
@@ -81,51 +66,23 @@ export const CopiesDataGrid = ({
       headerName: 'Status',
       width: 125,
       editable: false,
-      renderCell: (params) => {
-        return (
-          <Chip label={params.value} color={get_status_color(params.value)} />
-        );
-      },
+      renderCell: (params) => <ItemCopyStatusChip status={params.value} />,
+      filterable: true,
     },
     {
       field: 'condition',
       headerName: 'Condition',
       width: 125,
       editable: false,
-      renderCell: (params) => {
-        return (
-          <Chip
-            label={params.value}
-            color={get_condition_color(params.value)}
-          />
-        );
-      },
+      renderCell: (params) => (
+        <ItemCopyConditionChip condition={params.value} />
+      ),
     },
     {
-      field: 'branch_id',
+      field: 'branch_name',
       headerName: 'Belongs To',
-      width: 150,
+      width: 250,
       editable: false,
-      valueGetter: (value) => {
-        if (!value || !branches) return 'N/A';
-        return (
-          branches.find((branch: Branch) => branch.id === value)?.branch_name ||
-          'Unknown'
-        );
-      },
-    },
-    {
-      field: 'location',
-      headerName: 'Location',
-      width: 150,
-      editable: false,
-      valueGetter: (value) => {
-        if (!value || !branches) return 'N/A';
-        return (
-          branches.find((branch: Branch) => branch.id === value)?.branch_name ||
-          'Unknown'
-        );
-      },
     },
   ];
   return (
@@ -140,6 +97,20 @@ export const CopiesDataGrid = ({
         pageSizeOptions={[10, 25, 50]}
         initialState={{
           pagination: { paginationModel: { pageSize: 25 } },
+          filter: {
+            filterModel: {
+              items: just_available
+                ? [
+                    {
+                      field: 'status',
+                      operator: 'contains',
+                      value: 'Available',
+                      id: 1,
+                    },
+                  ]
+                : [],
+            },
+          },
         }}
         showToolbar
         slots={{ toolbar: CustomToolbar }}
@@ -158,8 +129,10 @@ export const CopiesDataGrid = ({
         }
         onRowSelectionModelChange={(newSelection) => {
           const selected_copy = Array.from(newSelection.ids)[0] || 0;
-          if (selected_copy) {
-            on_copy_selected(Number(selected_copy));
+          if (selected_copy && copies && on_copy_selected) {
+            on_copy_selected(
+              copies.find((c) => c.id === selected_copy) as Item_Copy
+            );
           }
         }}
       />

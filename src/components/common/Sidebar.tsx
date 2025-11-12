@@ -17,11 +17,11 @@ import {
   SsidChart,
   Groups2,
   Book,
-  CheckCircle,
   Output,
   Input,
   Shelves,
   Event,
+  TableRows,
 } from '@mui/icons-material';
 
 const drawerWidth = 256;
@@ -49,19 +49,19 @@ export const Sidebar = ({
     { text: 'Home', path: '/', icon: <Home /> },
     { text: 'Dashboard', path: '/dashboard', icon: <Dashboard /> },
     { text: 'Library Items', path: '/library-items', icon: <Book /> },
+    { text: 'All Copies', path: '/library-item-copies', icon: <TableRows /> },
     { text: 'Patrons', path: '/patrons', icon: <Groups2 /> },
     { text: 'Transactions', path: '/transactions', icon: <SsidChart /> },
     { text: 'Reservations', path: '/reservations', icon: <Event /> },
   ];
 
   const circulation_items = [
-    { text: 'Check In', path: '/reshelve', icon: <Input /> },
+    { text: 'Check In', path: '/check-in', icon: <Input /> },
     {
       text: 'Check Out',
-      path: '/checkout',
+      path: '/check-out',
       icon: <Output sx={{ transform: 'rotate(180deg)' }} />,
     },
-    { text: 'Mark Available', path: '/available', icon: <CheckCircle /> },
     { text: 'Reshelve', path: '/reshelve', icon: <Shelves /> },
   ];
 

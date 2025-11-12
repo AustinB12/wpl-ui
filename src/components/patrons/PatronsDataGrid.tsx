@@ -42,11 +42,23 @@ const columns: GridColDef[] = [
   {
     field: 'balance',
     headerName: 'Balance',
-    flex: 1,
-    valueFormatter: (value: number) => {
-      if (!value || typeof value !== 'number') return '$0.00';
-      return `$${value.toFixed(2)}`;
-    },
+    align: 'left',
+    headerAlign: 'left',
+    type: 'number',
+    width: 150,
+    valueFormatter: (value) =>
+      value === null || value === undefined
+        ? '$0.00'
+        : `$${Number(value).toFixed(2)}`,
+    renderCell: (params: GridRenderCellParams) => (
+      <Box
+        sx={{
+          color: params.value > 0 ? 'warning.main' : 'inherit',
+        }}
+      >
+        {`$${params.value.toFixed(2)}`}
+      </Box>
+    ),
   },
   {
     field: 'birthday',

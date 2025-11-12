@@ -1,9 +1,13 @@
-import { Chip, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { DataGrid, type GridColDef, type GridDensity } from '@mui/x-data-grid';
-import { useActiveTransactions } from '../../hooks/useTransactions';
 import { useState } from 'react';
 import { CustomToolbar } from './CustomDataGridToolbar';
 import ItemTypeChip from '../library_items/ItemTypeChip';
+import { ItemCopyConditionChip } from '../copies/ItemCopyConditionChip';
+import { useCheckedOutCopies } from '../../hooks/useCopies';
+import { useSelectedBranch } from '../../hooks/useBranchHooks';
+import { format_date } from '../../utils/dateUtils';
+import { ItemCopyStatusChip } from '../copies/ItemCopyStatusChip';
 
 const columns: GridColDef[] = [
   {
@@ -13,22 +17,17 @@ const columns: GridColDef[] = [
     valueGetter: (value) => Number(value),
   },
   {
-    field: 'copy_id',
-    headerName: 'Copy ID',
-    width: 120,
-    valueGetter: (value) => Number(value),
-  },
-  {
     field: 'patron_id',
-    headerName: 'Patron ID',
-    width: 120,
+    headerName: 'P-ID',
+    width: 90,
     valueGetter: (value) => Number(value),
   },
   {
     field: 'member',
     headerName: 'Patron',
     width: 180,
-    valueGetter: (_value, row) => `${row.first_name} ${row.last_name}`,
+    valueGetter: (_value, row) =>
+      `${row.patron_first_name} ${row.patron_last_name}`,
   },
   {
     field: 'title',
@@ -37,12 +36,18 @@ const columns: GridColDef[] = [
     flex: 1,
   },
   {
+    field: 'condition',
+    headerName: 'Condition',
+    width: 130,
+    renderCell: (params) => <ItemCopyConditionChip condition={params.value} />,
+  },
+  {
     field: 'due_date',
     headerName: 'Due Date',
-    width: 200,
+    width: 150,
     valueFormatter: (value) => {
       if (!value) return '?';
-      return new Date(value).toLocaleString();
+      return format_date(value);
     },
   },
   {
@@ -51,19 +56,10 @@ const columns: GridColDef[] = [
     width: 120,
     renderCell: (params) => (
       <Stack sx={{ height: 1 }} direction={'row'} gap={1} alignItems={'center'}>
-        <Chip
-          label={params.value}
-          variant="outlined"
-          color={params.value === 'Active' ? 'success' : 'info'}
-          size="small"
-        />
-        {params.row && params.row.due_date < new Date() && (
-          <Chip
-            label="Overdue"
-            variant="outlined"
-            color="warning"
-            size="small"
-          />
+        {new Date(params.row.due_date) < new Date() ? (
+          <ItemCopyStatusChip status="Overdue" />
+        ) : (
+          <ItemCopyStatusChip status="Checked Out" />
         )}
       </Stack>
     ),
@@ -82,25 +78,22 @@ export const CheckedOutItemsGrid = ({
 }: {
   select_item_copy: (copy_id: number) => void;
 }) => {
-  const { data, isLoading } = useActiveTransactions();
+  const { selected_branch } = useSelectedBranch();
+  const { data: checked_out_copies, isLoading } = useCheckedOutCopies(
+    selected_branch?.id || 1
+  );
   const [density, set_density] = useState<GridDensity>('standard');
 
   return (
     <DataGrid
-      rows={data || []}
+      rows={checked_out_copies || []}
       columns={columns}
       loading={isLoading}
       pageSizeOptions={[15, 30, 50]}
       initialState={{
         pagination: { paginationModel: { pageSize: 15 } },
       }}
-      onRowClick={(params) => select_item_copy(params.row.copy_id)}
-      sx={{
-        border: 'none',
-        '& .MuiDataGrid-columnHeaders': {
-          fontWeight: 600,
-        },
-      }}
+      onRowClick={(params) => select_item_copy(params.row.id)}
       slots={{ toolbar: CustomToolbar }}
       slotProps={{
         toolbar: {

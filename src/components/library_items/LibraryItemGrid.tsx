@@ -8,7 +8,12 @@ import ItemTypeChip from './ItemTypeChip';
 import { CustomToolbar } from '../common/CustomDataGridToolbar';
 
 const columns: GridColDef[] = [
-  { field: 'id', headerName: 'ID', width: 60 },
+  {
+    field: 'id',
+    headerName: 'ID',
+    width: 90,
+    valueGetter: (value) => Number(value),
+  },
   { field: 'title', headerName: 'Title', width: 150, editable: false },
   {
     field: 'item_type',

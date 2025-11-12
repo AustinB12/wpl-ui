@@ -135,6 +135,8 @@ export interface Patron_Form_Data {
 export interface Branch {
   id: number;
   branch_name: string;
+  address: string;
+  phone: string;
   is_main: boolean;
 }
 
@@ -166,12 +168,13 @@ export interface Library_Item {
   congress_code: string;
 }
 
-export type Condition = 'New' | 'Excellent' | 'Good' | 'Fair' | 'Poor';
+export type Item_Condition = 'New' | 'Excellent' | 'Good' | 'Fair' | 'Poor';
 export type Availability_Status =
   | 'Available'
   | 'Checked Out'
   | 'Reserved'
   | 'Processing'
+  | 'Unshelved'
   | 'Damaged'
   | 'Lost';
 
@@ -180,9 +183,10 @@ export interface Item_Copy {
   library_item_id: number;
   branch_id: number;
   status: Availability_Status;
-  condition?: Condition;
+  condition?: Item_Condition;
   cost: number;
   notes?: string;
+  branch_name?: string;
 }
 
 export interface Book extends Library_Item {
@@ -225,4 +229,37 @@ export interface Audiobook extends Library_Item, Book {
   narrator: string;
   library_item_id: number;
   duration_hours?: number;
+}
+
+export interface Item_Copy_Results extends Item_Copy {
+  library_item_title: string;
+  item_type: Library_Item_Type;
+  description: string;
+  publication_year: number;
+  branch_name: string;
+  patron_id: number;
+  patron_first_name: string;
+  patron_last_name: string;
+}
+
+export interface Checkin_Receipt {
+  id: number;
+  copy_id: number;
+  patron_id: number;
+  location_id: number;
+  transaction_type: string;
+  checkout_date: string;
+  due_date: string;
+  return_date: string;
+  fine_amount: number;
+  status: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  title: string;
+  item_type: string;
+  branch_name: string;
 }

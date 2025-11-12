@@ -7,7 +7,7 @@ export function TransactionTypeChip({
 }: {
   status: Transaction_Type;
 }): JSX.Element {
-  switch (status) {
+  switch (status.toUpperCase()) {
     case 'CHECKOUT':
       return <Chip variant="outlined" label="Checkout" color="info" />;
     case 'CHECKIN':

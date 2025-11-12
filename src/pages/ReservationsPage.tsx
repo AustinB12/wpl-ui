@@ -28,7 +28,12 @@ export const ReservationsPage = () => {
         rows={reservations}
         getRowId={(row) => row.id}
         columns={[
-          { field: 'id', headerName: 'ID', width: 60 },
+          {
+            field: 'id',
+            headerName: 'ID',
+            width: 90,
+            valueGetter: (value) => Number(value),
+          },
           {
             field: 'first_name',
             headerName: 'Patron',

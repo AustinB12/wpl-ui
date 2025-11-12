@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { data_service } from '../services/dataService';
 import type { Item_Copy } from '../types';
@@ -50,4 +50,59 @@ export const useCopyById = (
   }, [query.isError, query.error, options?.onError, options]);
 
   return query;
+};
+
+export const useCopiesUnshelved = (branch_id?: number) => {
+  return useQuery({
+    queryKey: ['unshelved_item_copies', branch_id],
+    queryFn: () => data_service.get_unshelved_copies(branch_id),
+  });
+};
+
+export const useReshelveCopy = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) => {
+  const query_client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (copy_id: number) => data_service.reshelve_item(copy_id),
+    onSuccess: () => {
+      query_client.invalidateQueries({ queryKey: ['all_item_copies'] });
+      query_client.invalidateQueries({ queryKey: ['unshelved_item_copies'] });
+      options?.onSuccess?.();
+    },
+    onError: options?.onError,
+  });
+};
+
+export const useCreateCopy = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) => {
+  const query_client = useQueryClient();
+
+  return useMutation({
+    mutationFn: (copy_data: {
+      library_item_id: number;
+      owning_branch_id: number;
+      condition?: string;
+      status?: string;
+      cost?: number;
+      notes?: string;
+    }) => data_service.create_copy(copy_data),
+    onSuccess: () => {
+      query_client.invalidateQueries({ queryKey: ['item_copies'] });
+      query_client.invalidateQueries({ queryKey: ['all_item_copies'] });
+      options?.onSuccess?.();
+    },
+    onError: options?.onError,
+  });
+};
+
+export const useCheckedOutCopies = (branch_id: number) => {
+  return useQuery({
+    queryKey: ['checked_out_copies', branch_id],
+    queryFn: () => data_service.get_checked_out_copies(branch_id),
+  });
 };

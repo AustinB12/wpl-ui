@@ -17,24 +17,30 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  Card,
+  CardContent,
+  Divider,
+  AlertTitle,
+  CardHeader,
 } from '@mui/material';
 import { useState, useEffect, type FC } from 'react';
 import { type SelectChangeEvent } from '@mui/material/Select';
-import { useBranchesContext } from '../hooks/useBranchHooks';
+import { useBranchesContext, useSelectedBranch } from '../hooks/useBranchHooks';
 import { get_condition_color } from '../utils/colors';
 import { CheckedOutItemsGrid } from '../components/common/CheckedOutItemsGrid';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import type { Condition } from '../types';
+import type { Item_Condition } from '../types';
 import { useReturnBook } from '../hooks/useTransactions';
 import { useCopyById } from '../hooks/useCopies';
+import { format_date } from '../utils/dateUtils';
 
 const conditions: string[] = ['New', 'Excellent', 'Good', 'Fair', 'Poor'];
 const steps = ['Select Item', 'Confirm Details'];
 
 interface CheckInFormData {
   copy_id: number | null;
-  new_condition?: Condition;
+  new_condition?: Item_Condition;
   new_location_id?: number;
   notes?: string;
 }
@@ -44,13 +50,23 @@ export const CheckInItem: FC = () => {
     copy_id: null,
   });
 
+  const { selected_branch } = useSelectedBranch();
+
   const [active_step, set_active_step] = useState(0);
   const [skipped, set_skipped] = useState(new Set<number>());
-  const [snackbar_open, set_snackbar_open] = useState(false);
+  const [snackbar, set_snackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   const { branches, loading } = useBranchesContext();
 
-  const [condition, set_condition] = useState<Condition>('Excellent');
+  const [condition, set_condition] = useState<Item_Condition>('Excellent');
 
   const { data: copy_data } = useCopyById(form_data.copy_id ?? 0);
 
@@ -64,24 +80,8 @@ export const CheckInItem: FC = () => {
   const {
     mutate: return_book,
     isPending: is_returning,
-    isError,
-    isSuccess,
+    data: return_data,
   } = useReturnBook();
-
-  // Handle success/error states
-  useEffect(() => {
-    if (isSuccess) {
-      set_snackbar_open(true);
-      // Reset form and go to completion step
-      setTimeout(() => {
-        set_active_step(steps.length);
-        set_form_data({ copy_id: null });
-        set_condition('Excellent');
-      }, 1000);
-    } else if (isError) {
-      set_snackbar_open(true);
-    }
-  }, [isSuccess, isError]);
 
   const is_step_skipped = (step: number) => {
     return skipped.has(step);
@@ -93,21 +93,36 @@ export const CheckInItem: FC = () => {
         {
           copy_id: form_data.copy_id || 0,
           new_condition: condition,
-          new_location_id: form_data?.new_location_id || 0,
+          new_location_id:
+            form_data?.new_location_id || selected_branch?.id || 1,
           notes: form_data?.notes,
         },
         {
-          onSuccess: () => {
-            set_snackbar_open(true);
+          onSuccess: (data) => {
+            set_snackbar({
+              open: true,
+              message: `Item ${
+                data?.copy_id || form_data.copy_id
+              } successfully checked in!${
+                data?.fine_amount && data.fine_amount > 0
+                  ? ` Fine applied: $${data.fine_amount.toFixed(2)}`
+                  : ''
+              }`,
+              severity: 'success',
+            });
             // Reset form and go to completion step
             setTimeout(() => {
               set_active_step(steps.length);
               set_form_data({ copy_id: null });
               set_condition('Excellent');
-            }, 1000);
+            }, 1500);
           },
-          onError: () => {
-            set_snackbar_open(true);
+          onError: (error: Error) => {
+            set_snackbar({
+              open: true,
+              message: `Failed to check in item: ${error.message}`,
+              severity: 'error',
+            });
           },
         }
       );
@@ -127,14 +142,11 @@ export const CheckInItem: FC = () => {
     set_active_step((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleReset = () => {
+  const handle_reset = () => {
     set_active_step(0);
     set_form_data({ copy_id: null });
     set_condition('Excellent');
-  };
-
-  const handle_close_snackbar = () => {
-    set_snackbar_open(false);
+    set_snackbar({ open: false, message: '', severity: 'success' });
   };
 
   const is_next_disabled = () => {
@@ -149,7 +161,7 @@ export const CheckInItem: FC = () => {
   };
 
   const handle_condition_change = (event: SelectChangeEvent) => {
-    set_condition(event.target.value as Condition);
+    set_condition(event.target.value as Item_Condition);
   };
 
   const handle_notes_change = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,22 +177,31 @@ export const CheckInItem: FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="xl" sx={{ pt: 4, height: '100%' }}>
+      <Container
+        maxWidth="xl"
+        sx={{
+          p: 4,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
         <Typography
+          onClick={() => console.log(return_data)}
           variant="h4"
           component="h1"
           gutterBottom
-          title={form_data?.new_condition}
           sx={{
             fontWeight: 'bold',
             mb: 3,
             fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
           }}
         >
-          {`Check In Item | Copy ID: ${form_data.copy_id || ''}`}
+          {'Check In Item'}
         </Typography>
 
-        <Stepper activeStep={active_step}>
+        <Stepper activeStep={active_step} sx={{ mb: 3 }}>
           {steps.map((label, index) => {
             const stepProps: { completed?: boolean } = {};
             const labelProps: {
@@ -198,12 +219,192 @@ export const CheckInItem: FC = () => {
         </Stepper>
         {active_step === steps.length ? (
           <>
-            <Typography sx={{ mt: 2, mb: 1 }}>
-              {"All steps completed - you're finished"}
-            </Typography>
+            <Card
+              sx={{
+                // flex: 1,
+                overflow: 'auto',
+                maxHeight: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+            >
+              <CardHeader
+                title="Check-In Receipt"
+                subheader={`Transaction ID: #${return_data?.id}`}
+              />
+              <CardContent
+                sx={{
+                  // flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                }}
+              >
+                {/* Patron Information */}
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Patron Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 6, md: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Patron ID
+                      </Typography>
+                      <Typography variant="body1">
+                        #{return_data?.patron_id}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, md: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Name
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.first_name} {return_data?.last_name}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 12, md: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Email
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.email}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Divider />
+
+                {/* Item Information */}
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Item Information
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 6, md: 3 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Copy ID
+                      </Typography>
+                      <Typography variant="body1">
+                        #{return_data?.copy_id}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, md: 3 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Title
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.title}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, md: 3 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Type
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.item_type}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 6, md: 3 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Location
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.branch_name}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                <Divider />
+
+                {/* Timeline */}
+                <Box>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Timeline
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Checkout Date
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.checkout_date
+                          ? format_date(return_data.checkout_date)
+                          : 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Due Date
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.due_date
+                          ? format_date(return_data.due_date)
+                          : 'N/A'}
+                      </Typography>
+                    </Grid>
+                    <Grid size={{ xs: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Return Date
+                      </Typography>
+                      <Typography variant="body1">
+                        {return_data?.return_date
+                          ? format_date(return_data.return_date)
+                          : 'N/A'}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Fine or Success Message */}
+                {return_data && return_data.fine_amount > 0 ? (
+                  <Alert
+                    sx={{
+                      p: 2,
+                      bgcolor: 'warning.light',
+                      borderRadius: 1,
+                    }}
+                  >
+                    <AlertTitle>⚠️ Overdue Fine</AlertTitle>
+                    {`This item was returned after the due date.  Fine Amount: ${return_data.fine_amount.toFixed(
+                      2
+                    )}`}
+                  </Alert>
+                ) : (
+                  <Alert
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
+                    }}
+                    severity="success"
+                  >
+                    <AlertTitle>✓ Returned On Time</AlertTitle>
+                    No fines have been assessed for this return.
+                  </Alert>
+                )}
+
+                {/* Notes (if present) */}
+                {return_data?.notes && (
+                  <>
+                    <Divider />
+                    <Box>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Notes
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {return_data.notes}
+                      </Typography>
+                    </Box>
+                  </>
+                )}
+              </CardContent>
+            </Card>
             <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
               <Box sx={{ flex: '1 1 auto' }} />
-              <Button onClick={handleReset}>Reset</Button>
+              <Button variant="outlined" onClick={handle_reset}>
+                Check In Another Item
+              </Button>
             </Box>
           </>
         ) : (
@@ -211,12 +412,18 @@ export const CheckInItem: FC = () => {
             <Box
               sx={{
                 flex: 1,
-                mt: 2,
+                display: 'flex',
+                flexDirection: 'column',
                 overflow: 'hidden',
+                minHeight: 0,
               }}
             >
               {active_step === 0 && (
-                <CheckedOutItemsGrid select_item_copy={handle_copy_selected} />
+                <Box sx={{ flex: 1, overflow: 'hidden', minHeight: 0 }}>
+                  <CheckedOutItemsGrid
+                    select_item_copy={handle_copy_selected}
+                  />
+                </Box>
               )}
               {active_step === 1 && (
                 <Grid container spacing={3} sx={{ mb: 3, pt: 1 }}>
@@ -285,13 +492,13 @@ export const CheckInItem: FC = () => {
                   </Grid>
                 </Grid>
               )}
-              <Box />
             </Box>
             <Box
               sx={{
                 display: 'flex',
                 flexDirection: 'row',
                 pt: 2,
+                flexShrink: 0,
               }}
             >
               <Button
@@ -340,20 +547,18 @@ export const CheckInItem: FC = () => {
         )}
 
         <Snackbar
-          open={snackbar_open}
-          autoHideDuration={6000}
-          onClose={handle_close_snackbar}
+          open={snackbar.open}
+          autoHideDuration={snackbar.severity === 'success' ? 4000 : 6000}
+          onClose={() => set_snackbar((prev) => ({ ...prev, open: false }))}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
           <Alert
-            onClose={handle_close_snackbar}
-            severity={isSuccess ? 'success' : 'error'}
+            onClose={() => set_snackbar((prev) => ({ ...prev, open: false }))}
+            severity={snackbar.severity}
             variant="filled"
             sx={{ width: '100%' }}
           >
-            {isSuccess
-              ? `Item ${form_data.copy_id} successfully checked in!`
-              : 'Failed to check in item. Please try again.'}
+            {snackbar.message}
           </Alert>
         </Snackbar>
       </Container>
