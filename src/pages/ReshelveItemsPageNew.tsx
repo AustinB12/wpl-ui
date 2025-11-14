@@ -83,7 +83,7 @@ export const ReshelveItemsPageNew = () => {
     onSuccess: () => {
       set_snackbar({
         open: true,
-        message: 'Item successfully marked as reshelved!',
+        message: 'Item successfully reshelved!',
         severity: 'success',
       });
       // Clear selection after success
@@ -142,14 +142,14 @@ export const ReshelveItemsPageNew = () => {
         variant="extended"
         sx={{ position: 'absolute', bottom: 16, right: 16 }}
       >
-        Mark As Available
+        RESHELVE
       </Fab>
 
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
         onClose={() => set_snackbar((prev) => ({ ...prev, open: false }))}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           onClose={() => set_snackbar((prev) => ({ ...prev, open: false }))}

@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, type PropsWithChildren } from 'react';
 import { Container, Fab } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { CopiesDataGrid } from '../components/copies/CopiesDataGrid';
 import { CreateCopyDialog } from '../components/copies/CreateCopyDialog';
 
-export const LibraryItemCopiesPage = () => {
+function LibraryItemCopiesPageContent({ children }: PropsWithChildren) {
   const [dialog_open, set_dialog_open] = useState(false);
+
+  const handle_close = () => {
+    set_dialog_open(false);
+  };
 
   const handle_create_library_item_copy = () => {
     set_dialog_open(true);
   };
-
   return (
     <Container
       sx={{
@@ -22,7 +25,7 @@ export const LibraryItemCopiesPage = () => {
         flexDirection: 'column',
       }}
     >
-      <CopiesDataGrid />
+      {children}
       <Fab
         color="primary"
         onClick={handle_create_library_item_copy}
@@ -36,10 +39,15 @@ export const LibraryItemCopiesPage = () => {
       >
         <Add />
       </Fab>
-      <CreateCopyDialog
-        open={dialog_open}
-        on_close={() => set_dialog_open(false)}
-      />
+      <CreateCopyDialog open={dialog_open} on_close={handle_close} />
     </Container>
+  );
+}
+
+export const LibraryItemCopiesPage = () => {
+  return (
+    <LibraryItemCopiesPageContent>
+      <CopiesDataGrid />
+    </LibraryItemCopiesPageContent>
   );
 };

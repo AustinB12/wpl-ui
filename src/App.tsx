@@ -1,5 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { GlobalStyles, useTheme } from '@mui/material';
+
 import { Layout } from './components/common/Layout';
 import { HomePage } from './pages/HomePage';
 import { LibraryItemsPage } from './pages/LibraryItemsPage';
@@ -9,13 +11,48 @@ import { CheckInItem } from './pages/CheckInItem';
 import { CheckOutItem } from './pages/CheckOutItem';
 import { BookPage } from './pages/Book';
 import { PatronPage } from './pages/PatronPage';
-import { TransactionsPage } from './pages/TransactionsPage';
-import { MarkAvailablePage } from './pages/MarkAvailablePage';
-import { ReshelveItemPage } from './pages/ReshelveItemPage';
-import { GlobalStyles, useTheme } from '@mui/material';
-import { ReservationsPage } from './pages/ReservationsPage';
-import { ReshelveItemsPageNew } from './pages/ReshelveItemsPageNew';
-import { LibraryItemCopiesPage } from './pages/LibraryItemCopiesPage';
+import { lazy } from 'react';
+
+const SettingsPage = lazy(() =>
+  import('./pages/SettingsPage').then((module) => ({
+    default: module.SettingsPage,
+  }))
+);
+const RenewalsPage = lazy(() =>
+  import('./pages/RenewalsPage').then((module) => ({
+    default: module.RenewalsPage,
+  }))
+);
+const MarkAvailablePage = lazy(() =>
+  import('./pages/MarkAvailablePage').then((module) => ({
+    default: module.MarkAvailablePage,
+  }))
+);
+const ReshelveItemPage = lazy(() =>
+  import('./pages/ReshelveItemPage').then((module) => ({
+    default: module.ReshelveItemPage,
+  }))
+);
+const ReservationsPage = lazy(() =>
+  import('./pages/ReservationsPage').then((module) => ({
+    default: module.ReservationsPage,
+  }))
+);
+const ReshelveItemsPageNew = lazy(() =>
+  import('./pages/ReshelveItemsPageNew').then((module) => ({
+    default: module.ReshelveItemsPageNew,
+  }))
+);
+const LibraryItemCopiesPage = lazy(() =>
+  import('./pages/LibraryItemCopiesPage').then((module) => ({
+    default: module.LibraryItemCopiesPage,
+  }))
+);
+const TransactionsPage = lazy(() =>
+  import('./pages/TransactionsPage').then((module) => ({
+    default: module.TransactionsPage,
+  }))
+);
 
 const queryClient = new QueryClient();
 
@@ -60,6 +97,8 @@ function App() {
           <Route path="reservations" element={<ReservationsPage />} />
           <Route path="reshelve" element={<ReshelveItemPage />} />
           <Route path="reshelve-new" element={<ReshelveItemsPageNew />} />
+          <Route path="renewals" element={<RenewalsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
           <Route path="available" element={<MarkAvailablePage />} />
           <Route path="books">
             <Route path=":book_id" element={<BookPage />} />

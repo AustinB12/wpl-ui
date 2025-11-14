@@ -10,6 +10,7 @@ import {
   Divider,
   useMediaQuery,
   useTheme,
+  Toolbar,
 } from '@mui/material';
 import {
   Home,
@@ -22,9 +23,11 @@ import {
   Shelves,
   Event,
   TableRows,
+  Sync,
+  Settings,
 } from '@mui/icons-material';
 
-const drawerWidth = 256;
+export const drawerWidth = 240;
 
 export const Sidebar = ({
   sidebarOpen,
@@ -36,7 +39,7 @@ export const Sidebar = ({
   const location = useLocation();
 
   const theme = useTheme();
-  const xsUp = useMediaQuery(theme.breakpoints.up('md'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const isActive = (path: string) => {
     return (
@@ -45,7 +48,7 @@ export const Sidebar = ({
     );
   };
 
-  const menu_items = [
+  const collection_items = [
     { text: 'Home', path: '/', icon: <Home /> },
     { text: 'Dashboard', path: '/dashboard', icon: <Dashboard /> },
     { text: 'Library Items', path: '/library-items', icon: <Book /> },
@@ -55,33 +58,39 @@ export const Sidebar = ({
     { text: 'Reservations', path: '/reservations', icon: <Event /> },
   ];
 
-  const circulation_items = [
+  const action_items = [
     { text: 'Check In', path: '/check-in', icon: <Input /> },
     {
       text: 'Check Out',
       path: '/check-out',
       icon: <Output sx={{ transform: 'rotate(180deg)' }} />,
     },
-    { text: 'Reshelve', path: '/reshelve', icon: <Shelves /> },
+    { text: 'Reshelve', path: '/reshelve-new', icon: <Shelves /> },
+    { text: 'Renewals', path: '/renewals', icon: <Sync /> },
   ];
 
-  return (
-    <Drawer
-      open={sidebarOpen}
-      onClose={() => setSidebarOpen(false)}
-      sx={{
-        width: drawerWidth * 0.6,
-      }}
-    >
-      <Box sx={{ overflow: 'auto', pt: 2 }}>
-        <List>
-          {menu_items.map((item) => (
+  const bottom_items = [
+    { text: 'Settings', path: '/settings', icon: <Settings /> },
+  ];
+
+  const drawer_content = (
+    <Box sx={{ overflow: 'auto', flex: 1 }}>
+      <List
+        sx={{
+          height: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Box>
+          {collection_items.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
                 component={Link}
                 to={item.path}
                 selected={isActive(item.path)}
-                onClick={() => setSidebarOpen(false)}
+                onClick={() => isMobile && setSidebarOpen(false)}
                 sx={{
                   mx: 1,
                   borderRadius: 1,
@@ -112,13 +121,13 @@ export const Sidebar = ({
             </ListItem>
           ))}
           <Divider sx={{ my: 1, mx: 2 }} />
-          {circulation_items.map((item) => (
+          {action_items.map((item) => (
             <ListItem key={item.text} disablePadding>
               <ListItemButton
                 component={Link}
                 to={item.path}
                 selected={isActive(item.path)}
-                onClick={() => !xsUp && setSidebarOpen(false)}
+                onClick={() => isMobile && setSidebarOpen(false)}
                 sx={{
                   mx: 1,
                   borderRadius: 1,
@@ -148,8 +157,87 @@ export const Sidebar = ({
               </ListItemButton>
             </ListItem>
           ))}
-        </List>
-      </Box>
-    </Drawer>
+          <Divider sx={{ my: 1, mx: 2 }} />
+        </Box>
+        {bottom_items.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemButton
+              component={Link}
+              to={item.path}
+              selected={isActive(item.path)}
+              onClick={() => isMobile && setSidebarOpen(false)}
+              sx={{
+                mx: 1,
+                borderRadius: 1,
+                '&.Mui-selected': {
+                  backgroundColor: 'primary.50',
+                  color: 'primary.main',
+                  '&:hover': {
+                    backgroundColor: 'primary.100',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  color: isActive(item.path) ? 'primary.main' : 'inherit',
+                  minWidth: 40,
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.text}
+                slotProps={{
+                  primary: { fontWeight: isActive(item.path) ? 600 : 400 },
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
+  return (
+    <Box
+      component="nav"
+      sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+    >
+      {/* Mobile drawer */}
+      <Drawer
+        variant="temporary"
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+          },
+        }}
+      >
+        <Toolbar />
+        {drawer_content}
+      </Drawer>
+      {/* Desktop permanent drawer */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: drawerWidth,
+          },
+        }}
+        open
+      >
+        <Toolbar />
+        {drawer_content}
+      </Drawer>
+    </Box>
   );
 };

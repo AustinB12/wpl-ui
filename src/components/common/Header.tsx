@@ -21,10 +21,15 @@ export const Header = ({
   setSidebarOpen: (open: boolean) => void;
 }) => {
   const theme = useTheme();
-  const xsUp = useMediaQuery(theme.breakpoints.up('md'));
+  const is_wide_view = useMediaQuery(theme.breakpoints.up('md'));
 
   return (
-    <AppBar position="static" color="default" elevation={1}>
+    <AppBar
+      position="fixed"
+      color="default"
+      elevation={1}
+      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+    >
       <Toolbar
         sx={{
           mx: 'auto',
@@ -38,9 +43,11 @@ export const Header = ({
           direction="row"
           spacing={1}
         >
-          <IconButton onClick={() => setSidebarOpen(!sidebarOpen)}>
-            <Menu />
-          </IconButton>
+          {!is_wide_view && (
+            <IconButton onClick={() => setSidebarOpen(!sidebarOpen)}>
+              <Menu />
+            </IconButton>
+          )}
           <Typography
             variant="h6"
             component={Link}
@@ -50,7 +57,7 @@ export const Header = ({
               fontWeight: 600,
             }}
           >
-            {xsUp ? 'Wayback Public Library' : 'WPL'}
+            {is_wide_view ? 'Wayback Public Library' : 'WPL'}
           </Typography>
         </Stack>
 
